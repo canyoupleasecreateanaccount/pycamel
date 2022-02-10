@@ -1,5 +1,8 @@
 import requests
+from requests import JSONDecodeError
 
+from src.modules.core.filter import Filter
+from src.modules.response.response import CamelResponse
 # TODO
 # 2. Add console prints for executing if it is needed
 
@@ -43,6 +46,10 @@ class Router:
         self.request_headers = headers
         return self
 
+    def set_filters(self, filters: dict) -> 'Router':
+        self.request_path += Filter.build_filter(filters)
+        return self
+
     def append_header(self, header_key, header_value):
         self.request_headers[header_key] = header_value
         return self
@@ -51,7 +58,13 @@ class Router:
         self.request_path = self.path
         self.request_headers = self.headers
 
-    def _fetch(self, *args, **kwargs):
+    def _fetch(self, is_raw_response_needed=False, *args, **kwargs):
         response = self._execution_method(url=self.request_path, headers=self.request_headers, *args, **kwargs)
         self._clear()
-        return response.json()
+        if is_raw_response_needed:
+            try:
+                return response.json()
+            except JSONDecodeError:
+                return {}
+        else:
+            return CamelResponse(response=response, headers=self.request_headers)

@@ -1,0 +1,3 @@
+[run]
+source = .
+omit = *tests*, ./examples/, *__init__.py
