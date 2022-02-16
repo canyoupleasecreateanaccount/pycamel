@@ -3,13 +3,14 @@ import pytest
 from src.modules.core.config import CamelConfig
 from src.modules.routing.router_maker import RouterMaker
 
-CamelConfig(host='https://gorest.co.in')
-public_maker = RouterMaker('/public/v1')
+CamelConfig(host='https://petstore.swagger.io')
+public_maker = RouterMaker('/v2')
 
-posts = public_maker.make_router('/users')
+pets = public_maker.make_router('/pet')
 
 
 @pytest.fixture(scope='session')
-def users_route():
-    return posts
+def get_pets():
+    return pets
+
 

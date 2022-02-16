@@ -1,10 +1,25 @@
+from pydantic import BaseModel
+from typing  import List
 
-def test_getting_posts_all(users_route):
-    c = {
-        "name":"Tenali Ramakrishna",
-        "gender":"male",
-        "email":"tenali.ramakrishna@15ce.com",
-        "status":"active"
-    }
-    response = users_route.append_header('Authorization', 'Bearer ACCESS-TOKEN').get(data=c)
+class Category(BaseModel):
+    id: int
+    name: str
+
+class Tags(BaseModel):
+    id: int
+    name: str = None
+
+
+class Pet(BaseModel):
+    id: int
+    category: Category = None
+    name: str
+    photoUrls: List[str]
+    tags: List[Tags]
+    status: str
+
+
+def test_getting_posts_all(get_pets):
+    response = get_pets.add_to_path("/38418376").get()
     print(response)
+    response.assert_status_code(200).validate(Tags, "tags")

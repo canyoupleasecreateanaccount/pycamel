@@ -59,7 +59,10 @@ class Router:
         self.request_headers = self.headers
 
     def _fetch(self, is_raw_response_needed=False, *args, **kwargs):
-        response = self._execution_method(url=self.request_path, headers=self.request_headers, *args, **kwargs)
+        response = self._execution_method(
+            url=self.request_path,
+            headers=self.request_headers, *args, **kwargs
+        )
         self._clear()
         if is_raw_response_needed:
             try:
@@ -67,4 +70,6 @@ class Router:
             except JSONDecodeError:
                 return {}
         else:
-            return CamelResponse(response=response, headers=self.request_headers)
+            return CamelResponse(
+                response=response, headers=self.request_headers
+            )
