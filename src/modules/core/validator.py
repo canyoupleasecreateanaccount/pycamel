@@ -1,11 +1,17 @@
+import os
+
 from pydantic import BaseModel
 from pydantic.error_wrappers import ValidationError
-import os
 
 
 class Validator:
 
-    def __init__(self, schema: BaseModel, response_data: dict, validation_key: str = None):
+    def __init__(
+            self,
+            schema: BaseModel,
+            response_data: dict,
+            validation_key: str = None
+    ):
         self.schema = schema
         self.response_data = response_data
         if validation_key is not None:
@@ -24,6 +30,7 @@ class Validator:
                 if key == searching_key:
                     return data_to_search.get(key)
                 self._iterator(searching_key, data_to_search.get(key))
+        return None
 
     def _data_searcher(self):
         path = self.validation_key.split(':')
@@ -54,8 +61,3 @@ class Validator:
             return initiated_objects
         except ValidationError as exception:
             raise AssertionError from exception
-
-
-
-
-

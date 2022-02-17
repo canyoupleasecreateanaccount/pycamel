@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing  import List
+from typing import List
 
 class Category(BaseModel):
     id: int
@@ -20,6 +20,8 @@ class Pet(BaseModel):
 
 
 def test_getting_posts_all(get_pets):
+    print(Pet.__fields__)
     response = get_pets.add_to_path("/38418376").get()
-    print(response)
     response.assert_status_code(200).validate(Tags, "tags")
+
+

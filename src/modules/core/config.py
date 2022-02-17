@@ -3,9 +3,9 @@ import os
 
 class CamelConfig:
 
-    def __init__(self, host: str) -> None:
+    def __init__(self, host: str, project_validation_key: str = None) -> None:
         self.host = host
-        self.project_validation_key = None
+        self.project_validation_key = project_validation_key
         self._set_env_properties()
 
     def _set_env_properties(self) -> None:
