@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Any
 
 import requests
 from json import JSONDecodeError
@@ -6,6 +6,8 @@ from json import JSONDecodeError
 from pydantic import BaseModel
 from pydantic.error_wrappers import ValidationError
 from pycamel.src.modules.core.validator import Validator
+
+from pycamel.src.utils.searcher import search_item, prepare_items
 
 
 class CamelResponse:
@@ -48,7 +50,24 @@ class CamelResponse:
                 "Received objects could not be mapped to schema"
             ) from validation_exception
 
-    def get_validated_objects(self) -> list:
+    def assert_parameter(
+                self,
+                parameter: str,
+                expected_value: Any
+    ) -> 'CamelResponse':
+        params_iterator = search_item(self.response_data, parameter)
+        while True:
+            try:
+                item = params_iterator.__next__()
+                assert item == expected_value, self
+            except StopIteration:
+                break
+        return self
+
+    def get_items_by_key(self, parameter: str) -> List:
+        return prepare_items(self.response_data, parameter)
+
+    def get_validated_objects(self) -> List:
         return self.validated_objects
 
 # TODO Refactor error log. Split request and response data.
