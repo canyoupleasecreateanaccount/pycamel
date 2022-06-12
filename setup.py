@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 import codecs
 import os
 
@@ -32,7 +32,8 @@ setup(
     long_description=long_description,
     url='https://github.com/canyoupleasecreateanaccount/pycamel',
     license='Apache License, Version 2.0, see LICENSE file',
-    packages=['pycamel'],
+    packages=find_packages(),
+    include_package_data=True,
     install_requires=['pydantic', 'requests'],
     keywords=['python', 'automation', 'testing', 'tests', 'backend automation',
               'pytests', 'pydantic'],
