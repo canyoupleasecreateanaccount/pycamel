@@ -1,6 +1,6 @@
 import os
 
-from src.modules.routing.router import Router
+from pycamel.src.modules.routing.router import Router
 
 
 class RouterMaker:

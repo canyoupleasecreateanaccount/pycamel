@@ -1,4 +1,4 @@
-from src.utils.camel_enum import CamelEnum
+from pycamel.src.utils.camel_enum import CamelEnum
 
 
 class Statuses(CamelEnum):

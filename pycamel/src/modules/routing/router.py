@@ -1,7 +1,7 @@
 import requests
 
-from src.modules.core.filter import Filter
-from src.modules.response.response import CamelResponse
+from pycamel.src.modules.core.filter import Filter
+from pycamel.src.modules.response.response import CamelResponse
 
 
 class Router:

@@ -110,4 +110,8 @@ class Validator:
             initiated_objects = self._validate(data_to_validate)
             return initiated_objects
         except ValidationError as exception:
-            raise AssertionError from exception
+            raise AssertionError(
+                f"\n\nException: {exception}"
+                f"\nData passed to validator: {data_to_validate}"
+                f"\nValidation schema: {self.schema.schema_json()}"
+            ) from exception

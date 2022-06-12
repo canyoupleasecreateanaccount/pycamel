@@ -1,6 +1,6 @@
 import pytest
 
-from src.modules.core.filter import Filter
+from pycamel.src.modules.core.filter import Filter
 
 
 @pytest.mark.parametrize(
