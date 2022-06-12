@@ -8,8 +8,6 @@ from pydantic.error_wrappers import ValidationError
 from src.modules.core.validator import Validator
 
 
-# TODO Add requested body into result of falling test
-
 class CamelResponse:
 
     def __init__(
@@ -57,6 +55,8 @@ class CamelResponse:
     def get_validated_objects(self) -> list:
         return self.validated_objects
 
+# TODO Refactor error log. Split request and response data.
+# TODO Add to error log request body if it was sent.
     def __str__(self) -> str:
         return f"\n\nRequest sent to: {self.response.url}\n" \
                f"Response status code: {self.response.status_code}\n" \
