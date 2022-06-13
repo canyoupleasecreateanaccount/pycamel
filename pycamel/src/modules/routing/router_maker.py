@@ -25,7 +25,11 @@ class RouterMaker:
         host = os.environ.get('pc_host')
         return f"{host}{self.service_host}{route}"
 
-    def make_router(self, route: str) -> Router:
+    def make_router(
+            self,
+            route: str,
+            router_validation_key: str = None
+    ) -> Router:
         """
         Returns Router object according to received path.
         Example of path /some-endpoint
@@ -35,4 +39,4 @@ class RouterMaker:
         :return: Router object
         """
         path = self._build_url(route)
-        return Router(path=path)
+        return Router(path=path, router_validation_key=router_validation_key)
