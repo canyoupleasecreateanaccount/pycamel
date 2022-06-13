@@ -29,8 +29,11 @@ class CamelResponse:
             self,
             expected_status_code: List[int]
     ) -> 'CamelResponse':
-        assert self.response.status_code == expected_status_code, self
-        return self
+        if not isinstance(expected_status_code, List):
+            raise ValueError("Expected list of integers")
+        else:
+            assert self.response.status_code in expected_status_code, self
+            return self
 
     def get_response_json(self) -> dict:
         return self.response_data
