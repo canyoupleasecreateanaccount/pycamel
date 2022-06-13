@@ -8,6 +8,7 @@ from pydantic.error_wrappers import ValidationError
 from pycamel.src.modules.core.validator import Validator
 
 from pycamel.src.utils.searcher import search_item, prepare_items
+from pycamel.src.utils.search_key_processor import search_key_processor
 
 
 class CamelResponse:
@@ -15,8 +16,10 @@ class CamelResponse:
     def __init__(
             self,
             response: requests.Response,
-            headers: dict
+            headers: dict,
+            router_validation_key: str = None
     ) -> None:
+        self.router_validation_key = router_validation_key
         self.response = response
         self.headers = headers
         self.validated_objects = []
@@ -41,8 +44,11 @@ class CamelResponse:
     def validate(
             self,
             schema: BaseModel,
-            validation_key: str = None
+            response_validation_key: str = None
     ) -> 'CamelResponse':
+        validation_key = search_key_processor(
+            self.router_validation_key, response_validation_key
+        )
         try:
             self.validated_objects = Validator(
                 schema, self.response_data, validation_key

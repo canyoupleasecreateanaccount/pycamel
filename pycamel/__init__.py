@@ -15,8 +15,9 @@ from .src.modules.routing.router_maker import RouterMaker
 
 from .src.utils.camel_enum import CamelEnum
 from .src.utils.searcher import search_item
+from .src.utils.search_key_processor import search_key_processor
 
 
 __author__ = 'Yurii Abramenko'
-__version__ = '0.0.3'
+__version__ = '0.0.4'
 __email__ = 'yura.abramenko1@gmail.com'

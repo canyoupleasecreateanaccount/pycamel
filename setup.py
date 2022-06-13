@@ -2,7 +2,6 @@ from setuptools import setup, find_packages
 import codecs
 import os
 
-
 """
 :authors: Yurii Abramenko
 :license: Apache License, Version 2.0, see LICENSE file
@@ -14,7 +13,7 @@ here = os.path.abspath(os.path.dirname(__file__))
 with codecs.open(os.path.join(here, "README.md"), encoding="utf-8") as fh:
     long_description = "\n" + fh.read()
 
-VERSION = '0.0.3'
+VERSION = '0.0.4'
 DESCRIPTION = 'Backend automation framework. Automation is easy.'
 LONG_DESCRIPTION = 'A package helps Automation QA creates automation' \
                    'project and setup tests without additional infrastructure '\

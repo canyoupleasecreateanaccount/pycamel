@@ -1,5 +1,3 @@
-import os
-
 from typing import List
 
 from pydantic import BaseModel
@@ -34,15 +32,7 @@ class Validator:
         """
         self.schema = schema
         self.response_data = response_data
-        if validation_key is not None:
-            if validation_key == '':
-                self.validation_key = None
-            else:
-                self.validation_key = validation_key
-        elif os.getenv("pc_project_validation_key") is not None:
-            self.validation_key = os.getenv("pc_project_validation_key")
-        else:
-            self.validation_key = None
+        self.validation_key = validation_key
 
     def _iterator(
             self,

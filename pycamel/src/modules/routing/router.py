@@ -6,8 +6,9 @@ from pycamel.src.modules.response.response import CamelResponse
 
 class Router:
 
-    def __init__(self, path: str) -> None:
+    def __init__(self, path: str, router_validation_key: str = None) -> None:
         self.path = path
+        self.router_validation_key = router_validation_key
         self.headers = {'Content-Type': 'application/json'}
 
         self.request_path = path
@@ -103,4 +104,8 @@ class Router:
             **kwargs
         )
         self._clear()
-        return CamelResponse(response=response, headers=self.request_headers)
+        return CamelResponse(
+            response=response,
+            headers=self.request_headers,
+            router_validation_key=self.router_validation_key
+        )
