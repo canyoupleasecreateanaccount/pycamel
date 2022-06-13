@@ -19,5 +19,5 @@ from .src.utils.search_key_processor import search_key_processor
 
 
 __author__ = 'Yurii Abramenko'
-__version__ = '0.0.4'
+__version__ = '0.0.5'
 __email__ = 'yura.abramenko1@gmail.com'
