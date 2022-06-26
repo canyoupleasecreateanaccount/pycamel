@@ -6,6 +6,7 @@ Quick start
 -----------
 
 - Firstly, init CamelConfig in main ``tests/conftest.py`` file
+
 .. code-block:: python
 
     from pycamel import CamelConfig
