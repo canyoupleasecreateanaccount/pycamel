@@ -1,7 +1,6 @@
 pycamel
 =======
 
-
 Quick start
 -----------
 
@@ -93,7 +92,10 @@ Contribution
     There should be 100% pass rate and all of your code should have a coverage by tests.
 
     Execute commands below for get info about current coverage
+
 ``coverage run -m pytest -s -v tests/``
+
+and after it
 
 ``coverage report -m``
 
