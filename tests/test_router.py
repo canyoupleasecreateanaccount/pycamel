@@ -83,3 +83,15 @@ def test_getting_validated_objects(get_router):
     response.validate(User, 'data')
     validated_objects = response.get_validated_objects()
     assert isinstance(*validated_objects, User) is True
+
+
+def test_header_propagation_to_response_class_from_set_header(get_router):
+    header = {"APP": "TEST"}
+    response = get_router.set_headers(header).get()
+    assert response.headers == header
+
+
+def test_header_propagation_to_response_class_from_append_header(get_router):
+    expected_headers = {'Content-Type': 'application/json', 'APP': 'TEST'}
+    response = get_router.append_header("APP", "TEST").get()
+    assert response.headers == expected_headers

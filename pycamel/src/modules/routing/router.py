@@ -154,9 +154,10 @@ class Router:
             *args,
             **kwargs
         )
+        _previous_headers = self.request_headers
         self._clear()
         return CamelResponse(
             response=response,
-            headers=self.request_headers,
+            headers=_previous_headers,
             router_validation_key=self.router_validation_key
         )
