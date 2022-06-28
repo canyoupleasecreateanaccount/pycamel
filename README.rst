@@ -1,6 +1,17 @@
 pycamel
 =======
 
+Install
+-------
+
+According to version of pip just type in console
+
+``pip3 install pycamel``
+
+or
+
+``pip install pycamel``
+
 Quick start
 -----------
 

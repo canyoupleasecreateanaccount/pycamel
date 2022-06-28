@@ -15,7 +15,12 @@ def prepare_items(input_data, parameter):
     params_iterator = search_item(input_data, parameter)
     while True:
         try:
-            result.append(params_iterator.__next__())
+            item = params_iterator.__next__()
+            if isinstance(item, list):
+                for i in item:
+                    result.append(i)
+            else:
+                result.append(item)
         except StopIteration:
             break
     return result

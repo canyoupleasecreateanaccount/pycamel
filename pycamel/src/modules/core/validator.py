@@ -12,7 +12,7 @@ class Validator:
     """
     def __init__(
             self,
-            schema: BaseModel,
+            schema,
             response_data: dict,
             validation_key: str = None
     ) -> None:
@@ -68,7 +68,7 @@ class Validator:
         path = self.validation_key.split(':')
         if len(path) > 1:
             result = self.response_data
-            for path_item in self.response_data:
+            for path_item in path:
                 result = result.get(path_item)
         else:
             result = self._iterator(*path)

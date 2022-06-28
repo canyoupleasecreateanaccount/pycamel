@@ -65,12 +65,18 @@ class CamelResponse:
                 expected_value: Any
     ) -> 'CamelResponse':
         params_iterator = search_item(self.response_data, parameter)
+        parameter_found = False
         while True:
             try:
                 item = params_iterator.__next__()
                 assert item == expected_value, self
+                parameter_found = True
             except StopIteration:
                 break
+        if parameter_found is False:
+            raise AssertionError(
+                'Searched parameter is not presented in dictionary'
+            )
         return self
 
     def get_items_by_key(self, parameter: str) -> List:
@@ -79,8 +85,6 @@ class CamelResponse:
     def get_validated_objects(self) -> List:
         return self.validated_objects
 
-# TODO Refactor error log. Split request and response data.
-# TODO Add to error log request body if it was sent.
     def __str__(self) -> str:
         return f"\n\nRequest sent to: {self.response.url}\n" \
                f"Response status code: {self.response.status_code}\n" \
