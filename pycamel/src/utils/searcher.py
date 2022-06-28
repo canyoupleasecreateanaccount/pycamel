@@ -1,4 +1,15 @@
-def search_item(input_data, parameter):
+from typing import Any, List
+
+
+def search_item(input_data: Any, parameter: str):
+    """
+    Function for searching all needed parameters across the received object.
+    If nothing was found on top level, it tries to find target on low levels
+    using recursion.
+    :param input_data: List or dict with items that should be checked.
+    :param parameter: Target key that we try to find across the object.
+    :return: Returns generator.
+    """
     if isinstance(input_data, dict):
         for key, value in input_data.items():
             if key == parameter:
@@ -10,7 +21,13 @@ def search_item(input_data, parameter):
             yield from search_item(item, parameter)
 
 
-def prepare_items(input_data, parameter):
+def prepare_items(input_data: Any, parameter: str) -> List:
+    """
+    Function collects all found items that passed parameter condition.
+    :param input_data: List or dict with items that should be checked.
+    :param parameter: Target key that we try to find across the object.
+    :return: Returns array of accepted condition values.
+    """
     result = []
     params_iterator = search_item(input_data, parameter)
     while True:

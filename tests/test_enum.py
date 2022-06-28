@@ -7,9 +7,9 @@ class Statuses(CamelEnum):
 
 
 class RandomNumbers(CamelEnum):
-    one = 1
-    two = 2
-    five = 5
+    ONE = 1
+    TWO = 2
+    FIVE = 5
 
 
 def test_getting_list_of_attributes():

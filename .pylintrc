@@ -1,4 +1,6 @@
 [MASTER]
+disable=
+    C0114, # missing-module-docstring
 
 # Specify a configuration file.
 #rcfile=

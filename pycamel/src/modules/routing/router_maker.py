@@ -4,6 +4,13 @@ from pycamel.src.modules.routing.router import Router
 
 
 class RouterMaker:
+    """
+    Class for specific service path, that will generate routes for the
+    service. For example: you have services data-service and image-service, so
+    each of them has some routers, all that you need it is just send service
+    host. For now, you can create as much as you need numbers of
+    endpoints.
+    """
 
     def __init__(self, service_host: str) -> None:
         """
@@ -12,7 +19,7 @@ class RouterMaker:
             For example, if main url looks like that:
             https://google.com/api-service/v1/some-endpoint
             router should have that part - api-service/v1
-            After it, u can easy make any endpoints on that url
+            After it u can easily make any endpoints on that url
         """
         self.service_host = service_host
 
@@ -35,6 +42,10 @@ class RouterMaker:
         Example of path /some-endpoint
         As a result u will get all REST methods with full functionality
         for that entity.
+        :param router_validation_key: value that will be used as validation
+        key for validator method. If something has been populated for
+        project key validation in config, router validation key will have
+        the highest priority.
         :param route: String. Example /some-endpoint
         :return: Router object
         """

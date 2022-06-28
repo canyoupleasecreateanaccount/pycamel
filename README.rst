@@ -4,7 +4,7 @@ pycamel
 Install
 -------
 
-According to version of pip just type in console
+According to your version of pip type in console
 
 ``pip3 install pycamel``
 
@@ -15,7 +15,7 @@ or
 Quick start
 -----------
 
-- Firstly, init CamelConfig in main ``tests/conftest.py`` file
+- First, init CamelConfig in the main ``tests/conftest.py`` file
 
 .. code-block:: python
 
@@ -24,21 +24,20 @@ Quick start
     CamelConfig(host='https://localhost/')
 
 
-This host will be used as a main project url.
+This host will be used as the main project url.
 
 For example, if you have a lot of services in your infrastructure
 
     - data-service
     - image-service
 
-All of them will have same host, but different path according to service and their api versions
+all of them will have the same host, but different paths according to the services and their api versions
 
     - http://localhost/data-service/v1/
     - http://localhost/image-service/v1/
     - http://localhost/image-service/v2/
 
-We recommend you create for each service separate sub folder under tests folder and init their
-API maker
+We recommend you to create a separate sub folder for each service under the tests folder and init API maker for them
 
 ``tests/data_service/conftest.py``
 
@@ -48,10 +47,10 @@ API maker
 
     data_service_maker_v1 = RouterMaker('/data-service/v1')
 
-Same code should be for another services. For cases with different API versions (v1, v2, etc.) it is up to you
-create different folders or make one for both of them but with two router makers for each version.
+The same code should be used for another services. For cases with different API versions (v1, v2, etc.) it is up to you
+to create different folders or to make one for both of them but with a router maker for each version.
 
-So, for now we ready to make some tests ^_^ Lets test endpoint on data-service.
+So, for now we are ready to make some tests ^_^ Let's test endpoint on the data-service.
 
 Add some code into our ``tests/data_service/conftest.py``
 
@@ -71,10 +70,10 @@ Add some code into our ``tests/data_service/conftest.py``
         return cats_statistic
 
 
-In tests below we will check only status codes. More information about validation you can find in
-example project or on official documentation.
+In the tests below we will check only status codes. More information about the validation you can find in
+the example project or in the official documentation.
 
-Create file for our tests. ``tests/data_service/test_statistic.py``
+Create a file for our tests. ``tests/data_service/test_statistic.py``
 
 .. code-block:: python
 
@@ -98,11 +97,11 @@ In the project you can find `examples <https://github.com/canyoupleasecreateanac
 
 Contribution
 ------------
-- Validate of your code and run tests.
+- Validate your code and run tests.
 
-    There should be 100% pass rate and all of your code should have a coverage by tests.
+    There should be 100% pass rate and all your code should have a coverage by tests.
 
-    Execute commands below for get info about current coverage
+    Execute the commands below for getting the info about current code coverage
 
 ``coverage run -m pytest -s -v tests/``
 
@@ -113,22 +112,22 @@ and after it
 
 - Pylint
 
-    Check that your code doesn't have any pylint errors.
+    Check if your code doesn't have any pylint errors.
 - Submit your pull request
 
-    In pull request please, describe your feature as clearly as it possible and submit it.
+    In a pull request, describe your feature as clearly as possible and submit it, please.
 
 
 Learn automation with us
 -------------------------
-Here is you can find youtube lessons about automation on python with 
-common pytest framework and with pycamel. Enjoy it :)
+Here you can find some youtube lessons about automation on python with
+a common pytest framework and with pycamel. Enjoy it :)
 
 https://www.youtube.com/c/SolveMeChannel
 
 Donation
 ---------
-For people, who would like to support us. God bless U ^_^
+For people who would like to support us. God bless U ^_^
 
 ``BSC20``
 

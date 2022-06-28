@@ -15,15 +15,15 @@ class CamelConfig:
         :param project_validation_key: It is not mandatory parameter.
             Receives string that needs for getting data from response object.
             Validation method get that parameter in case when it didn't set
-            for concreate endpoint or validation function didn't received it
+            for concreate endpoint or validation function didn't receive it
             directly.
             For example, if in your backend project you have stable contract
             like that:
-            {"meta": {"some":"data"}, "data: {"some": "data"}}
+            {"meta": {"some":"data"}, "data": {"some": "data"}}
             You don't need to get key "data" all time from response.json(),
             all that you need, just put your key here and for all endpoints we
             will try to get data by that key.
-                For cases when you need to get data from lower level, you can
+            For cases when you need to get data from lower level, you can
             set list of keys as string with :.
             Like that - "data:some:needed:"
         """
@@ -34,7 +34,7 @@ class CamelConfig:
     def _set_env_properties(self) -> None:
         """
         Sets all project configuration variables as env variables.
-        All properties that doesn't have values, will not be set.
+        All properties that don't have values, will not be set.
         :return: None
         """
         env_variables = self.__dict__

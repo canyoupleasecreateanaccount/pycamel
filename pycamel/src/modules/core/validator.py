@@ -90,7 +90,7 @@ class Validator:
             result.append(self.schema.parse_obj(data_to_validate))
         return result
 
-    def fetch(self):
+    def fetch(self) -> List[BaseModel]:
         """
         Method that applies validation.
         :return: List of instances of class BaseModel

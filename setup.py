@@ -13,7 +13,7 @@ here = os.path.abspath(os.path.dirname(__file__))
 with codecs.open(os.path.join(here, "README.rst"), encoding="utf-8") as fh:
     long_description = "\n" + fh.read()
 
-VERSION = '0.0.9'
+VERSION = '1.0.0'
 DESCRIPTION = 'Backend automation framework. Automation is easy.'
 LONG_DESCRIPTION = 'A package helps Automation QA creates automation' \
                    'project and setup tests without additional infrastructure '\
@@ -37,7 +37,7 @@ setup(
               'pytests', 'pydantic'],
     classifiers=[
         "License :: OSI Approved :: Apache Software License",
-        "Development Status :: 3 - Alpha",
+        "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",
         "Programming Language :: Python :: 3.0",
         "Programming Language :: Python :: 3.1",

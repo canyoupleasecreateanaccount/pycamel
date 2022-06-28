@@ -1,11 +1,12 @@
-import pytest
 import os
+import pytest
+
+from pydantic import BaseModel
 
 import requests
 
 from pycamel.src.modules.routing.router import Router
 from pycamel.src.modules.response.response import CamelResponse
-from pydantic import BaseModel
 
 
 class User(BaseModel):
@@ -14,6 +15,7 @@ class User(BaseModel):
     first_name: str
     last_name: str
     avatar: str
+
 
 PATH = 'https://reqres.in/api/users'
 

@@ -11,4 +11,3 @@ def test_router_generation(clear_project_validation_key):
     assert isinstance(maker, Router) is True
     assert maker.path == 'https://google.com/v1/api/images'
     assert maker.router_validation_key == 'images_array'
-

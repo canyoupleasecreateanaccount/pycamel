@@ -1,6 +1,8 @@
-from pycamel.src.modules.core.validator import Validator
-from pydantic import BaseModel
 from typing import List
+
+from pydantic import BaseModel
+
+from pycamel.src.modules.core.validator import Validator
 
 
 class GameBase(BaseModel):

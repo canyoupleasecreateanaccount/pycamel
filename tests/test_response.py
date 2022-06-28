@@ -42,6 +42,7 @@ def test_when_parameter_not_found_for_assertion(get_response):
     except AssertionError:
         pass
 
+
 def test_getting_items_by_key(get_response):
     result = get_response.get_items_by_key('page')
     assert isinstance(result, list) is True
