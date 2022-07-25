@@ -95,21 +95,6 @@ Examples
 In the project you can find `examples <https://github.com/canyoupleasecreateanaccount/pycamel-examples>`_ of using the framework in test cases.
 
 
-Contribution
-------------
-- Validate your code and run tests.
-
-    There should be 100% pass rate and all your code should have a coverage by tests.
-
-    Execute the commands below for getting the info about current code coverage
-
-``coverage run -m pytest -s -v tests/``
-
-and after it
-
-``coverage report -m``
-
-
 - Pylint
 
     Check if your code doesn't have any pylint errors.
@@ -133,4 +118,4 @@ For people who would like to support us. God bless U ^_^
 
 ``0x3EC81929e06950322d5125d8e6CA834F3d9B21f8``
 
-    DOGE | BNB | CAKE | ADA | BUSD
+DOGE | BNB | CAKE | ADA | BUSD | TRX | MATIC | AVAX | ATOM | DIA | DOT
