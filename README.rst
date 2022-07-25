@@ -1,6 +1,11 @@
 pycamel
 =======
 
+|unittest passing|
+
+.. |unittest passing| image:: https://github.com/canyoupleasecreateanaccount/pycamel/actions/workflows/unittest.yml/badge.svg?branch=main
+   :target: https://github.com/canyoupleasecreateanaccount/pycamel/actions/workflows/unittest.yml
+
 Install
 -------
 
