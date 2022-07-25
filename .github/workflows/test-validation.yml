@@ -1,6 +1,6 @@
 # This is a basic workflow to help you get started with Actions
 
-name: MainCommitValidation
+name: TestValidation
 
 on:
   push:
@@ -27,4 +27,12 @@ jobs:
         run: pip3 install -r requirements.txt
 
       - name: Run tests
-        run: pytest -s -v tests/*
+        run: pytest -s -v tests/ --cov=./ --cov-report=xml
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          env_vars: OS,PYTHON
+          fail_ci_if_error: true
+          files: ./coverage.xml
