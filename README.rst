@@ -1,13 +1,16 @@
 pycamel
 =======
 
-|unittest passing| |codecov badge|
+|unittest passing| |codecov badge| |pypi version|
 
 .. |unittest passing| image:: https://github.com/canyoupleasecreateanaccount/pycamel/actions/workflows/unittest.yml/badge.svg?branch=main
    :target: https://github.com/canyoupleasecreateanaccount/pycamel/actions/workflows/unittest.yml
 
 .. |codecov badge| image:: https://codecov.io/gh/canyoupleasecreateanaccount/pycamel/branch/main/graph/badge.svg?token=70GAEA6ZXL
  :target: https://codecov.io/gh/canyoupleasecreateanaccount/pycamel
+
+.. |pypi version| image:: https://badge.fury.io/py/pycamel.svg
+    :target: https://badge.fury.io/py/pycamel
 
 Install
 -------
