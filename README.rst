@@ -1,10 +1,13 @@
 pycamel
 =======
 
-|unittest passing|
+|unittest passing| |codecov badge|
 
 .. |unittest passing| image:: https://github.com/canyoupleasecreateanaccount/pycamel/actions/workflows/unittest.yml/badge.svg?branch=main
    :target: https://github.com/canyoupleasecreateanaccount/pycamel/actions/workflows/unittest.yml
+
+.. |codecov badge| image:: https://codecov.io/gh/canyoupleasecreateanaccount/pycamel/branch/main/graph/badge.svg?token=70GAEA6ZXL
+ :target: https://codecov.io/gh/canyoupleasecreateanaccount/pycamel
 
 Install
 -------
