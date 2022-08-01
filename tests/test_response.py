@@ -43,10 +43,17 @@ def test_when_parameter_not_found_for_assertion(get_response):
         pass
 
 
+def test_when(get_router):
+    response = get_router.add_to_path('/1').get()
+    print(response.response_data)
+    response.validate(User, 'data')
+
+
+
 def test_getting_items_by_key(get_response):
-    result = get_response.get_items_by_key('page')
+    result = get_response.get_items_by_key('limit')
     assert isinstance(result, list) is True
-    assert result == [1]
+    assert result == [3]
 
 
 def test_getting_absent_parameter_in_response(get_response):

@@ -13,9 +13,9 @@ def test_header_setter(get_router):
 
 
 def test_filter_setter(get_router):
-    req_filter = {"page": 2}
+    req_filter = {"limit": 2}
     get_router.set_filters(req_filter)
-    assert get_router.request_path == f"{PATH}?page=2"
+    assert get_router.request_path == f"{PATH}?limit=2"
 
 
 def test_header_append(get_router):
@@ -32,8 +32,7 @@ def test_default_get_request(get_router):
 
 def test_default_post_request(get_router):
     user_data = {
-        "name": "morpheus",
-        "job": "leader"
+        "last_name": "morpheus"
     }
     response = get_router.post(json=user_data)
     response.assert_status_code([201])
@@ -41,25 +40,25 @@ def test_default_post_request(get_router):
 
 def test_default_put_request(get_router):
     user_data = {
-        "name": "morpheus",
-        "job": "zion resident"
+        "last_name": "morpheus",
+        "first_name": "Jony"
     }
     response = get_router.add_to_path('/2').put(json=user_data)
     response.assert_status_code([200])
 
 
-def test_default_patch_request(get_router):
-    user_data = {
-        "name": "morpheus",
-        "job": "zion resident"
-    }
-    response = get_router.add_to_path('/2').patch(json=user_data)
-    response.assert_status_code([200])
-
+# def test_default_patch_request(get_router):
+#     user_data = {
+#         "name": "morpheus",
+#         "job": "zion resident"
+#     }
+#     response = get_router.add_to_path('/2').patch(json=user_data)
+#     response.assert_status_code([200])
+#
 
 def test_default_delete_request(get_router):
-    response = get_router.add_to_path('/2').delete()
-    response.assert_status_code([204])
+    response = get_router.add_to_path('/4').delete()
+    response.assert_status_code([202])
 
 
 def test_router_clear_method(get_router):
@@ -80,7 +79,7 @@ def test_getting_assert_error_with_wrong_schema(get_router):
 
 def test_getting_validated_objects(get_router):
     response = get_router.add_to_path('/1').get()
-    response.validate(User, 'data')
+    response.validate(User, '')
     validated_objects = response.get_validated_objects()
     assert isinstance(*validated_objects, User) is True
 

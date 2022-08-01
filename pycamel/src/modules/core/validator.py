@@ -3,6 +3,8 @@ from typing import List
 from pydantic import BaseModel
 from pydantic.error_wrappers import ValidationError
 
+from pycamel.src.errors.ValidationErrors import AbsentValidationItems
+
 
 class Validator:
     """
@@ -54,7 +56,8 @@ class Validator:
             for key in data_to_search:
                 if key == searching_key:
                     return data_to_search.get(key)
-                self._iterator(searching_key, data_to_search.get(key))
+                elif isinstance(data_to_search.get(key), dict):
+                    self._iterator(searching_key, data_to_search.get(key))
         return None
 
     def _data_searcher(self) -> dict:
@@ -83,11 +86,14 @@ class Validator:
         :return: list of instances of pydantic class BaseModel
         """
         result = []
-        if isinstance(data_to_validate, list):
-            for item in data_to_validate:
-                result.append(self.schema.parse_obj(item))
-        else:
-            result.append(self.schema.parse_obj(data_to_validate))
+        if data_to_validate not in ([], {}, None):
+            if isinstance(data_to_validate, list):
+                for item in data_to_validate:
+                    result.append(self.schema.parse_obj(item))
+            elif isinstance(data_to_validate, dict):
+                result.append(self.schema.parse_obj(data_to_validate))
+        else: # TODO Add error message
+            raise AbsentValidationItems
         return result
 
     def fetch(self) -> List[BaseModel]:

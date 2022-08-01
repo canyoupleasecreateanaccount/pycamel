@@ -20,6 +20,7 @@ LONG_DESCRIPTION = 'A package helps Automation QA creates automation' \
                    'and time wasting.' \
                    'All base structure has been written and prepared for you.'
 
+# TODO https://stackoverflow.com/questions/14459828/how-to-set-bug-tracker-url-in-setup-py-script
 # Setting up
 setup(
     name="pycamel",

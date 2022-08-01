@@ -1,23 +1,24 @@
 import os
 import pytest
-
+from typing import Optional
 from pydantic import BaseModel
-
 import requests
 
 from pycamel.src.modules.routing.router import Router
 from pycamel.src.modules.response.response import CamelResponse
 
 
-class User(BaseModel):
-    id: int
-    email: str
-    first_name: str
+class UserBase(BaseModel):
+    first_name: Optional[str]
     last_name: str
-    avatar: str
+    company_id: Optional[int]
 
 
-PATH = 'https://reqres.in/api/users'
+class User(UserBase):
+    user_id: int
+
+
+PATH = 'https://send-request.me/api/users'
 
 
 @pytest.fixture

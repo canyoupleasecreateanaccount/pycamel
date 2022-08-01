@@ -10,6 +10,8 @@ from pycamel.src.modules.core.validator import Validator
 
 from pycamel.src.utils.searcher import search_item, prepare_items
 from pycamel.src.utils.search_key_processor import search_key_processor
+from pycamel.src.errors.ValidationErrors import AbsentValidationItems, IncorrectAssertParameter
+from pycamel.src.enums.assert_conditions import AssertConditions
 
 
 class CamelResponse:
@@ -91,7 +93,8 @@ class CamelResponse:
     def assert_parameter(
                 self,
                 parameter: str,
-                expected_value: Any
+                expected_value: Any,
+                assert_condition: AssertConditions = AssertConditions.EQUAL.value
     ) -> 'CamelResponse':
         """
         Method for validation any parameters in body. It tries to find all
@@ -106,15 +109,36 @@ class CamelResponse:
         while True:
             try:
                 item = params_iterator.__next__()
-                assert item == expected_value, self
+                self._apply_assert_condition(
+                    item, expected_value, assert_condition)
                 parameter_found = True
             except StopIteration:
                 break
         if parameter_found is False:
-            raise AssertionError(
-                'Searched parameter is not presented in dictionary'
-            )
+            raise AbsentValidationItems # TODO Add validation error
         return self
+
+    def _apply_assert_condition(
+            self,
+            actual_value,
+            expected_value,
+            assert_condition: AssertConditions
+    ) -> None:
+        if assert_condition == AssertConditions.EQUAL.value:
+            assert actual_value == expected_value, self
+        elif assert_condition == AssertConditions.IN.value:
+            assert actual_value in expected_value, self
+        elif assert_condition == AssertConditions.LOWER_THAN.value:
+            assert actual_value < expected_value, self
+        elif assert_condition == AssertConditions.GREATER_THAN.value:
+            assert actual_value > expected_value, self
+        elif assert_condition == AssertConditions.LOWER_OR_EQUAL.value:
+            assert actual_value <= expected_value, self
+        elif assert_condition == AssertConditions.GREATER_OR_EQUAL.value:
+            assert actual_value >= expected_value, self
+        else:
+            raise IncorrectAssertParameter # TODO Add validation error
+
 
     def get_items_by_key(self, parameter: str) -> List:
         """
