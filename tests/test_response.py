@@ -46,7 +46,7 @@ def test_when_parameter_not_found_for_assertion(get_response):
 def test_when(get_router):
     response = get_router.add_to_path('/1').get()
     print(response.response_data)
-    response.validate(User, 'data')
+    response.assert_parameter('first_name', 'data', '_ad')
 
 
 

@@ -1,16 +1,17 @@
 from typing import List, Any
-
 from json import JSONDecodeError
 
 import requests
 
 from pydantic import BaseModel
 from pydantic.error_wrappers import ValidationError
-from pycamel.src.modules.core.validator import Validator
 
+from pycamel.src.modules.core.validator import Validator
 from pycamel.src.utils.searcher import search_item, prepare_items
 from pycamel.src.utils.search_key_processor import search_key_processor
-from pycamel.src.errors.ValidationErrors import AbsentValidationItems, IncorrectAssertParameter
+from pycamel.src.errors.ValidationErrors import (
+    AbsentValidationItems, IncorrectAssertParameter
+)
 from pycamel.src.enums.assert_conditions import AssertConditions
 
 
@@ -21,10 +22,10 @@ class CamelResponse:
     functionality for validation.
     """
     def __init__(
-            self,
-            response: requests.Response,
-            headers: dict,
-            router_validation_key: str = None
+        self,
+        response: requests.Response,
+        headers: dict,
+        router_validation_key: str = None
     ) -> None:
         """
         :param response: Default response from requests lib.
@@ -43,8 +44,8 @@ class CamelResponse:
             self.response_data = {}
 
     def assert_status_code(
-            self,
-            expected_status_code: List[int]
+        self,
+        expected_status_code: List[int]
     ) -> 'CamelResponse':
         """
         Validation method for response status code. Check that status code
@@ -65,13 +66,12 @@ class CamelResponse:
         return self.response_data
 
     def validate(
-            self,
-            schema: BaseModel,
-            response_validation_key: str = None
+        self,
+        schema: BaseModel,
+        response_validation_key: str = None
     ) -> 'CamelResponse':
         """
-        Method validates that to response data we can apply pydantic schema
-        that has been sent to method.
+        Method validates response data and apply received pydantic schema.
         :param schema: Pydantic schema
         :param response_validation_key: Key for getting target data from
         response data. The key has the highest priority from another.
@@ -91,17 +91,29 @@ class CamelResponse:
             ) from validation_exception
 
     def assert_parameter(
-                self,
-                parameter: str,
-                expected_value: Any,
-                assert_condition: AssertConditions = AssertConditions.EQUAL.value
+        self,
+        parameter: str,
+        expected_value: Any,
+        assert_condition: AssertConditions = AssertConditions.EQUAL.value
     ) -> 'CamelResponse':
         """
         Method for validation any parameters in body. It tries to find all
         params and compare it with expected value. Params can be parsed from
         different level of response json.
-        :param parameter: Searched parameter
+        :param parameter: Value for the parameter will be validated.
+            For example, in response data you have {"data": 1}.
+            So, if you send "data" as parameter, we will pick value of it and
+            compare with expected value according to assert_condition.
         :param expected_value: Expected value for it.
+        :param assert_condition: According to the assert_condition parameter
+            will be applied concreate assert condition.
+            Possible values (value | condition):
+                '_eq' | ==
+                '_in' | in
+                '_lt' | < (means than actual value is less than expected)
+                '_gt' | > (means than actual value higher than expected)
+                '_le' | <= (means that actual value less or equal to expected)
+                '_ge' | >= (means that actual value higher or equal to expected)
         :return: returns self
         """
         params_iterator = search_item(self.response_data, parameter)
@@ -115,15 +127,33 @@ class CamelResponse:
             except StopIteration:
                 break
         if parameter_found is False:
-            raise AbsentValidationItems # TODO Add validation error
+            raise AbsentValidationItems(
+                'Nothing has been passed for validation.'
+                'Validation data should not be equal to None, {} or []')
         return self
 
     def _apply_assert_condition(
             self,
-            actual_value,
-            expected_value,
+            actual_value: Any,
+            expected_value: Any,
             assert_condition: AssertConditions
     ) -> None:
+        """
+        Method applies assertion according to received assert_condition
+        parameter.
+        Possible values (value | condition):
+                '_eq' | ==
+                '_in' | in
+                '_lt' | < (means than actual value is less than expected)
+                '_gt' | > (means than actual value higher than expected)
+                '_le' | <= (means that actual value less or equal to expected)
+                '_ge' | >= (means that actual value higher or equal to expected)
+
+        :param actual_value: value that received from Be and should be validated
+        :param expected_value: expected value :)
+        :param assert_condition: Flag for apply concreate object compare.
+        :return: Returns nothing (None)
+        """
         if assert_condition == AssertConditions.EQUAL.value:
             assert actual_value == expected_value, self
         elif assert_condition == AssertConditions.IN.value:
@@ -137,12 +167,15 @@ class CamelResponse:
         elif assert_condition == AssertConditions.GREATER_OR_EQUAL.value:
             assert actual_value >= expected_value, self
         else:
-            raise IncorrectAssertParameter # TODO Add validation error
-
+            raise IncorrectAssertParameter(
+                f"Incorrect filter "
+                f"has been passed for validation: {assert_condition}."
+                f"Possible values are: {AssertConditions.list()}"
+            )
 
     def get_items_by_key(self, parameter: str) -> List:
         """
-        It is not validation method. It helps to get all values by key from
+        It is not a validation method. It helps to get all values by key from
         response object with level ignore.
         :param parameter: Searched parameter.
         :return: returns list of values or empty list if nothing was found.
@@ -153,7 +186,8 @@ class CamelResponse:
         """
         If validation method ended with successful you can get all your
         validated objects that
-        :return:
+        :return: List of instances based on pydantic schema that has been sent
+        to .validate method.
         """
         return self.validated_objects
 

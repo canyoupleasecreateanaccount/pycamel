@@ -9,13 +9,13 @@ from pycamel.src.modules.response.response import CamelResponse
 class Router:
     """
     Default router class that gives possibility to send requests as it
-    implemented in base request lib, but with some additionally functionality.
+    implemented in base requests lib, but with some additionally functionality.
     """
     def __init__(self, path: str, router_validation_key: str = None) -> None:
         """
-        :param path: Concreate router path.
+        :param path: Concreate router path. For example /users
         :param router_validation_key: Key that will be used for each request
-        and type of request under that route.
+        and type of request under that route for .validate method.
         """
         self.path = path
         self.router_validation_key = router_validation_key
@@ -33,7 +33,7 @@ class Router:
         :param args: Dictionary, list of tuples or bytes to send
         in the query string for the :class:`Request`.
         :param kwargs: Optional arguments that ``request`` takes.
-        :return: Result of execution _fetch method. class CamelResponse.
+        :return: Result of execution _fetch method. CamelResponse class.
         """
         self._execution_method = requests.get
         return self._fetch(*args, **kwargs)
@@ -45,7 +45,7 @@ class Router:
         :param args: Dictionary, list of tuples or bytes to send
         in the query string for the :class:`Request`.
         :param kwargs: Optional arguments that ``request`` takes.
-        :return: Result of execution _fetch method. class CamelResponse.
+        :return: Result of execution _fetch method. CamelResponse class.
         """
         self._execution_method = requests.post
         return self._fetch(*args, **kwargs)
@@ -57,7 +57,7 @@ class Router:
         :param args: Dictionary, list of tuples or bytes to send
         in the query string for the :class:`Request`.
         :param kwargs: Optional arguments that ``request`` takes.
-        :return: Result of execution _fetch method. class CamelResponse.
+        :return: Result of execution _fetch method. CamelResponse class.
         """
         self._execution_method = requests.put
         return self._fetch(*args, **kwargs)
@@ -69,7 +69,7 @@ class Router:
         :param args: Dictionary, list of tuples or bytes to send
         in the query string for the :class:`Request`.
         :param kwargs: Optional arguments that ``request`` takes.
-        :return: Result of execution _fetch method. class CamelResponse.
+        :return: Result of execution _fetch method. CamelResponse class.
         """
         self._execution_method = requests.patch
         return self._fetch(*args, **kwargs)
@@ -81,7 +81,7 @@ class Router:
         :param args: Dictionary, list of tuples or bytes to send
         in the query string for the :class:`Request`.
         :param kwargs: Optional arguments that ``request`` takes.
-        :return: Result of execution _fetch method. class CamelResponse.
+        :return: Result of execution _fetch method. CamelResponse class.
         """
         self._execution_method = requests.delete
         return self._fetch(*args, **kwargs)

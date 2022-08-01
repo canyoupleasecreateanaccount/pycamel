@@ -9,7 +9,7 @@ def search_key_processor(
 ) -> Optional[str]:
     """
     Functions detects all validation keys and according to priority
-    returns most the highest prioritized key.
+    returns the highest prioritized key.
     :param router_validation_key: Key that has been received from router
     declaration. That key responses for all routes under one router maker.
     :param response_validation_key: Key that has been received from validation

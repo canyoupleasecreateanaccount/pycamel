@@ -1,14 +1,14 @@
-from typing import Any, List
+from typing import Any, List, Union, Iterator
 
 
-def search_item(input_data: Any, parameter: str):
+def search_item(input_data: Union[list, dict], parameter: str) -> Iterator:
     """
     Function for searching all needed parameters across the received object.
     If nothing was found on top level, it tries to find target on low levels
     using recursion.
     :param input_data: List or dict with items that should be checked.
     :param parameter: Target key that we try to find across the object.
-    :return: Returns generator.
+    :return: Returns iterator.
     """
     if isinstance(input_data, dict):
         for key, value in input_data.items():

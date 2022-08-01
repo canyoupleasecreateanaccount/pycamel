@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Any, Union
 
 from pydantic import BaseModel
 from pydantic.error_wrappers import ValidationError
@@ -10,27 +10,27 @@ class Validator:
     """
     Class responses for validation received object according to pydantic
     schema. After success validation gives possibility to get parsed
-    instance os pydantic base class with all sent data.
+    instances of pydantic model with all data.
     """
     def __init__(
             self,
-            schema,
+            schema: BaseModel,
             response_data: dict,
             validation_key: str = None
     ) -> None:
         """
         Constructor of validator.
-        :param schema: Pydantic schema. class BaseModel that will be applied
-            to received data from BE for validation it.
-        :param response_data: data received from BE
+        :param schema: Pydantic schema. BaseModel that will be applied
+            to received data from BE for validation.
+        :param response_data: Data received from BE
         :param validation_key: Validation key for getting concreate value from
-            response data. Same parameter has class CamelConfig. Natively
+            response data. Same parameter has CamelConfig class. Natively
             receiving this parameter in constructor has highly priority than
             parameter filled in the CamelConfig.
             For example: if you have dict like that:
             {"data": {"some": "data"}}, you can fill validation key with
             "data" value, so as a result, pydantic schema will be applied to
-            this part of dict {"some": "data"}.
+            the part of dict {"some": "data"}.
         """
         self.schema = schema
         self.response_data = response_data
@@ -38,8 +38,8 @@ class Validator:
 
     def _iterator(
             self,
-            searching_key,
-            data_to_search=None
+            searching_key: str,
+            data_to_search: dict = None
     ) -> [None, dict, list]:
         """
         Recursive method that try to detect part of object that should be
@@ -60,13 +60,13 @@ class Validator:
                     self._iterator(searching_key, data_to_search.get(key))
         return None
 
-    def _data_searcher(self) -> dict:
+    def _data_searcher(self) -> Any:
         """
         According to set keys, try to get data from response data.
-        If search key has been populated for more than 2 value, we try to
-        get it without searching of around all data, if not, try to find needed
+        If search key has been populated with more than 2 values, we try to
+        get it without searching around of all data, if not, try to find needed
         data in dict by key.
-        :return: Dict with concreate data for validation.
+        :return: Data for validation.
         """
         path = self.validation_key.split(':')
         if len(path) > 1:
@@ -77,11 +77,13 @@ class Validator:
             result = self._iterator(*path)
         return result
 
-    def _validate(self, data_to_validate) -> List[BaseModel]:
+    def _validate(self, data_to_validate: Union[dict, list]) -> List[BaseModel]:
         """
-        Method check if data that he has is array or not, after it try
-        to apply for each item pydantic schema. Instances of objects
-        returns as array.
+        Method applies pydantic schema for data_to_validate object. In case
+        when it is an array, method will apply schema to each array item
+        in loop. If data_to_validate will be equal to one of [], {}, None value
+        it will raise AbsentValidationItems exception.
+
         :param data_to_validate: It could be dict or list.
         :return: list of instances of pydantic class BaseModel
         """
@@ -92,8 +94,11 @@ class Validator:
                     result.append(self.schema.parse_obj(item))
             elif isinstance(data_to_validate, dict):
                 result.append(self.schema.parse_obj(data_to_validate))
-        else: # TODO Add error message
-            raise AbsentValidationItems
+        else:
+            raise AbsentValidationItems(
+                'Nothing has been passed for validation.'
+                'Validation data should not be equal to None, {} or []'
+            )
         return result
 
     def fetch(self) -> List[BaseModel]:

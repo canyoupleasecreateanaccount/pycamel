@@ -7,7 +7,7 @@ class RouterMaker:
     """
     Class for specific service path, that will generate routes for the
     service. For example: you have services data-service and image-service, so
-    each of them has some routers, all that you need it is just send service
+    each of them has some routes, all that you need it is just type service
     host. For now, you can create as much as you need numbers of
     endpoints.
     """
@@ -25,7 +25,7 @@ class RouterMaker:
 
     def _build_url(self, route: str) -> str:
         """
-        Build url from all parts of received data.
+        Builds url from all parts of received data.
         :param route: String. Example of path /some-endpoint
         :return: String. Full path.
         """
@@ -45,7 +45,7 @@ class RouterMaker:
         :param router_validation_key: value that will be used as validation
         key for validator method. If something has been populated for
         project key validation in config, router validation key will have
-        the highest priority.
+        the highest priority and will be applied to validation.
         :param route: String. Example /some-endpoint
         :return: Router object
         """

@@ -3,8 +3,8 @@ import os
 
 class CamelConfig:
     """
-    Configuration class is responsible for project configuration.
-    Parameters that were set for it decides how it will work.
+    Configuration class responses for project configuration.
+    Parameters of the class decides how it will work.
     """
     def __init__(self, host: str, project_validation_key: str = None) -> None:
         """
