@@ -5,6 +5,7 @@ from pycamel.src.modules.routing.router import Router
 
 
 def test_router_generation(clear_project_validation_key):
+    """Check functionality of route generation"""
     os.environ['pc_host'] = 'https://google.com'
     maker = RouterMaker('/v1').make_router(
         route='/api/images', router_validation_key='images_array')

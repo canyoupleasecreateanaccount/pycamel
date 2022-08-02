@@ -121,6 +121,17 @@ a common pytest framework and with pycamel. Enjoy it :)
 
 https://www.youtube.com/c/SolveMeChannel
 
+It is ready to use backend API where you can practice with automation case writing.
+
+``https://send-request.me/``
+
+Contact us
+----------
+
+Email: ``solveme.solutions@gmail.com``
+
+Telegram: ``https://t.me/automation_testing_with_solveme``
+
 Donation
 ---------
 For people who would like to support us. God bless U ^_^

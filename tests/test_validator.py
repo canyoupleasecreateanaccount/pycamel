@@ -42,28 +42,38 @@ TEST_USER = {
 
 
 def test_validation_without_validation_key():
+    """
+    Test common validation using pydantic model.
+    """
     result = Validator(User, TEST_USER).fetch()
     for item in result:
         assert isinstance(item, User) is True
 
 
 def test_validation_with_validation_key():
+    """
+    Test validation with validation key, when only first step has been sent.
+    """
     result = Validator(Game, TEST_USER, 'games').fetch()
     for item in result:
         assert isinstance(item, Game) is True
 
 
 def test_validation_with_received_path():
+    """
+    Test validation with validation key, when more than one step has been sent.
+    """
     result = Validator(Order, TEST_USER, "orders:game").fetch()
     for item in result:
         assert isinstance(item, Order)
 
 
-def test_validation_error_if_something_went_wrong():
+def test_validation_if_data_is_wrong():
+    """
+    Test when data is invalid and schema could not be applied to it.
+    """
     try:
         Validator(Game, TEST_USER).fetch()
-        int('This row of wrong code for case when row '
-            'above did not return Assertion error'
-            )
+        int('For case when row above did not trigger assertion')
     except AssertionError:
         pass

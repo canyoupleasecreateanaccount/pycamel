@@ -3,7 +3,9 @@ from typing import List, Any, Union
 from pydantic import BaseModel
 from pydantic.error_wrappers import ValidationError
 
-from pycamel.src.errors.ValidationErrors import AbsentValidationItems
+from pycamel.src.errors.ValidationErrors import (
+    AbsentValidationItems, IncorrectValidationPath
+)
 
 
 class Validator:
@@ -14,7 +16,7 @@ class Validator:
     """
     def __init__(
             self,
-            schema: BaseModel,
+            schema,
             response_data: dict,
             validation_key: str = None
     ) -> None:
@@ -72,7 +74,13 @@ class Validator:
         if len(path) > 1:
             result = self.response_data
             for path_item in path:
-                result = result.get(path_item)
+                try:
+                    result = result.get(path_item)
+                except AttributeError as exception:
+                    raise IncorrectValidationPath(
+                        f"Check path to validation item. "
+                        f"Current it isn't correct: {path}"
+                    ) from exception
         else:
             result = self._iterator(*path)
         return result

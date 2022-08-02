@@ -29,9 +29,8 @@ v1.0.2
     ``` .assert_parameter("status", ['ACTIVE', 'BLOCKED'], '_in') ```
     Default parameter for filter is '_eq'
 
+# Fixed description for methods and classes of pycamel package
+    For now each package, method, function and class has actual description.
+
 # Fixed issue with recursion
     It happens when object doesn't have any sub objects like arrays or dictionaries during execution of .validate method
-
-
-
-

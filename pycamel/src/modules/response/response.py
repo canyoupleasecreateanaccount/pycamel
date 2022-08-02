@@ -45,17 +45,17 @@ class CamelResponse:
 
     def assert_status_code(
         self,
-        expected_status_code: List[int]
+        expected_status_codes: List[int]
     ) -> 'CamelResponse':
         """
         Validation method for response status code. Check that status code
         in list of expected status codes.
-        :param expected_status_code: Receives array of status codes.
+        :param expected_status_codes: Receives array of status codes.
         :return: returns self
         """
-        if not isinstance(expected_status_code, List):
+        if not isinstance(expected_status_codes, List):
             raise ValueError("Expected list of integers")
-        assert self.response.status_code in expected_status_code, self
+        assert self.response.status_code in expected_status_codes, self
         return self
 
     def get_response_json(self) -> dict:

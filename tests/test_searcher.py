@@ -36,6 +36,7 @@ TEST_ITEM = {
     ("time", ["26.02.2022"]),  # string from top level
     ("datetime", [])  # case for absent key in object
 ])
-def test_getting_different_types_of_data(search_key, expected_result):
+def test_get_diff_types_of_data(search_key, expected_result):
+    """Check that searcher could find on any levels any types of data"""
     result = prepare_items(TEST_ITEM, search_key)
     assert result == expected_result

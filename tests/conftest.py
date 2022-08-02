@@ -1,8 +1,10 @@
 import os
-import pytest
 from typing import Optional
-from pydantic import BaseModel
+
+import pytest
 import requests
+
+from pydantic import BaseModel
 
 from pycamel.src.modules.routing.router import Router
 from pycamel.src.modules.response.response import CamelResponse
@@ -46,3 +48,13 @@ def get_response(make_request):
         headers={'Content-Type': 'application/json'}
     )
     return c_response
+
+
+@pytest.fixture
+def create_user(get_router):
+    user_data = {
+        "last_name": "morpheus"
+    }
+    response = get_router.post(json=user_data)
+    response.assert_status_code([201])
+    return response.get_response_json()
