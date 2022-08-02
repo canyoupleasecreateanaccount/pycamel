@@ -39,6 +39,7 @@ setup(
     project_urls={
         'Source': 'https://github.com/canyoupleasecreateanaccount/pycamel/',
         'Tracker': 'https://github.com/canyoupleasecreateanaccount/pycamel/issues',
+        'Changelog': 'https://github.com/canyoupleasecreateanaccount/pycamel/releases',
     },
     classifiers=[
         "License :: OSI Approved :: Apache Software License",
