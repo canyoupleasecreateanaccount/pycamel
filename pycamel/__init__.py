@@ -17,7 +17,13 @@ from .src.utils.camel_enum import CamelEnum
 from .src.utils.searcher import search_item
 from .src.utils.search_key_processor import search_key_processor
 
+from .src.enums.assert_conditions import AssertConditions
+
+from .src.errors.ValidationErrors import (
+    AbsentValidationItems, IncorrectValidationPath, IncorrectAssertParameter
+)
+
 
 __author__ = 'Yurii Abramenko'
-__version__ = '1.0.1'
+__version__ = '1.0.2'
 __email__ = 'yura.abramenko1@gmail.com'

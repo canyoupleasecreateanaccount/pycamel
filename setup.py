@@ -13,14 +13,13 @@ here = os.path.abspath(os.path.dirname(__file__))
 with codecs.open(os.path.join(here, "README.rst"), encoding="utf-8") as fh:
     long_description = "\n" + fh.read()
 
-VERSION = '1.0.1'
+VERSION = '1.0.2'
 DESCRIPTION = 'Backend automation framework. Automation is easy.'
 LONG_DESCRIPTION = 'A package helps Automation QA creates automation' \
                    'project and setup tests without additional infrastructure '\
                    'and time wasting.' \
                    'All base structure has been written and prepared for you.'
 
-# TODO https://stackoverflow.com/questions/14459828/how-to-set-bug-tracker-url-in-setup-py-script
 # Setting up
 setup(
     name="pycamel",
@@ -36,6 +35,10 @@ setup(
     install_requires=['pydantic', 'requests'],
     keywords=['python', 'automation', 'testing', 'tests', 'backend automation',
               'pytests', 'pydantic'],
+    project_urls={
+        'Source': 'https://github.com/canyoupleasecreateanaccount/pycamel/',
+        'Tracker': 'https://github.com/canyoupleasecreateanaccount/pycamel/issues',
+    },
     classifiers=[
         "License :: OSI Approved :: Apache Software License",
         "Development Status :: 5 - Production/Stable",
