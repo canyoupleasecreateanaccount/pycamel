@@ -1,6 +1,7 @@
-from setuptools import setup, find_packages
 import codecs
 import os
+from setuptools import setup, find_packages
+
 
 """
 :authors: Yurii Abramenko

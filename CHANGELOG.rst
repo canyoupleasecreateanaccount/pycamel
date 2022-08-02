@@ -34,3 +34,6 @@ v1.0.2
 
 # Fixed issue with recursion
     It happens when object doesn't have any sub objects like arrays or dictionaries during execution of .validate method
+
+# Fixed tests and added additional coverage
+    Added some additional cases for package cover and added description for each autotest.
