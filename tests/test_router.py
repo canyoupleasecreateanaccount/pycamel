@@ -1,5 +1,7 @@
 from tests.conftest import PATH, User
 
+from pycamel.src.errors.SystemErrors import ForbiddenParameter
+
 
 def test_path_setter(get_router):
     """
@@ -16,6 +18,48 @@ def test_header_setter(get_router):
     header = {"TEST_HEADER": "APP"}
     get_router.set_headers(header)
     assert get_router.request_headers == header
+
+
+def test_that_setter_override_default_headers(get_router_with_default_headers):
+    """
+    In test we validate that headers changes according to sent values and
+    overrides default headers. Additional validation for _clean method that
+    triggers when request has been sent.
+    """
+    default_headers = {
+        "nice": "header", 'Content-Type': 'application/json'
+    }
+    assert get_router_with_default_headers.headers == default_headers
+
+    new_header = {"TEST_HEADER": "APP"}
+    get_router_with_default_headers.set_headers(new_header)
+    assert get_router_with_default_headers.request_headers == new_header
+
+    get_router_with_default_headers._clear()
+    assert get_router_with_default_headers.headers == default_headers
+    assert get_router_with_default_headers.request_headers == default_headers
+
+
+def test_that_append_adds_headers_to_default(get_router_with_default_headers):
+    """
+    In test we validate that headers changes according to sent values and
+    appends headers. Additional validation for _clean method that
+    triggers when request has been sent.
+    """
+    default_headers = {
+        "nice": "header", 'Content-Type': 'application/json'
+    }
+    assert get_router_with_default_headers.headers == default_headers
+
+    get_router_with_default_headers.append_header("TEST_HEADER", "APP")
+    assert get_router_with_default_headers.request_headers == {
+        "nice": "header", 'Content-Type': 'application/json',
+        "TEST_HEADER": "APP"
+    }
+
+    get_router_with_default_headers._clear()
+    assert get_router_with_default_headers.headers == default_headers
+    assert get_router_with_default_headers.request_headers == default_headers
 
 
 def test_filter_setter(get_router):
@@ -128,3 +172,88 @@ def test_header_propagation_to_response_class_from_append_header(get_router):
     expected_headers = {'Content-Type': 'application/json', 'APP': 'TEST'}
     response = get_router.append_header("APP", "TEST").get()
     assert response.headers == expected_headers
+
+
+def test_that_user_can_not_pass_forbidden_params_for_get(get_router):
+    """
+    In test we check that method throw error when user try to pass header or
+    url without using of set methods.
+    """
+    try:
+        get_router.get(headers={"some": "header"})
+        int("For case when row above did throw exception")
+    except ForbiddenParameter:
+        pass
+    try:
+        get_router.get(url="https://google.com")
+        int("For case when row above did throw exception")
+    except ForbiddenParameter:
+        pass
+
+
+def test_that_user_can_not_pass_forbidden_params_for_post(get_router):
+    """
+    In test we check that method throw error when user try to pass header or
+    url without using of set methods.
+    """
+    try:
+        get_router.post(headers={"some": "header"})
+        int("For case when row above did throw exception")
+    except ForbiddenParameter:
+        pass
+    try:
+        get_router.post(url="https://google.com")
+        int("For case when row above did throw exception")
+    except ForbiddenParameter:
+        pass
+
+
+def test_that_user_can_not_pass_forbidden_params_for_put(get_router):
+    """
+    In test we check that method throw error when user try to pass header or
+    url without using of set methods.
+    """
+    try:
+        get_router.put(headers={"some": "header"})
+        int("For case when row above did throw exception")
+    except ForbiddenParameter:
+        pass
+    try:
+        get_router.put(url="https://google.com")
+        int("For case when row above did throw exception")
+    except ForbiddenParameter:
+        pass
+
+
+def test_that_user_can_not_pass_forbidden_params_for_patch(get_router):
+    """
+    In test we check that method throw error when user try to pass header or
+    url without using of set methods.
+    """
+    try:
+        get_router.patch(headers={"some": "header"})
+        int("For case when row above did throw exception")
+    except ForbiddenParameter:
+        pass
+    try:
+        get_router.patch(url="https://google.com")
+        int("For case when row above did throw exception")
+    except ForbiddenParameter:
+        pass
+
+
+def test_that_user_can_not_pass_forbidden_params_for_delete(get_router):
+    """
+    In test we check that method throw error when user try to pass header or
+    url without using of set methods.
+    """
+    try:
+        get_router.delete(headers={"some": "header"})
+        int("For case when row above did throw exception")
+    except ForbiddenParameter:
+        pass
+    try:
+        get_router.delete(url="https://google.com")
+        int("For case when row above did throw exception")
+    except ForbiddenParameter:
+        pass

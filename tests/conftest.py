@@ -35,6 +35,12 @@ def get_router():
     return test_router
 
 
+@pytest.fixture
+def get_router_with_default_headers():
+    test_router = Router(PATH, default_headers={"nice": "header"})
+    return test_router
+
+
 @pytest.fixture(scope='session')
 def make_request():
     response = requests.get(PATH)

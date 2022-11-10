@@ -35,7 +35,8 @@ class RouterMaker:
     def make_router(
             self,
             route: str,
-            router_validation_key: str = None
+            router_validation_key: str = None,
+            default_headers: dict = None
     ) -> Router:
         """
         Returns Router object according to received path.
@@ -47,7 +48,13 @@ class RouterMaker:
         project key validation in config, router validation key will have
         the highest priority and will be applied to validation.
         :param route: String. Example /some-endpoint
+        :param default_headers: Dict. Default is None. Dict with headers
+            that will be used as default headers.
         :return: Router object
         """
         path = self._build_url(route)
-        return Router(path=path, router_validation_key=router_validation_key)
+        return Router(
+            path=path,
+            router_validation_key=router_validation_key,
+            default_headers=default_headers
+        )

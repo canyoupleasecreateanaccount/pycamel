@@ -1,5 +1,16 @@
 Change log
 ----------
+v1.0.3
+------
+# Fixed docstring for REST API methods and added Exception
+  There was a row that you can pass any params that accept requests lib, from now it is not a truth.
+  You can not pass URL and header params to the REST method, these params could be changed or updated
+  only by specific methods like .append_headers, .set_headers, etc.
+
+# Added possibility to set default header for router
+  From now, you can set the default header for any router, it could be useful for case when you
+  will test admin routes or routes with required AUTH headers for each request, so, you can just set it
+  once for some route and enjoy.
 
 v1.0.2
 ------

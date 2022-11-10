@@ -125,11 +125,11 @@ def test_when_parameter_not_found(get_response):
         pass
 
 
-def test_incorrect_filter_applied(get_router):
+def test_incorrect_filter_applied(create_user, get_router):
     """
     Check case when incorrect assert parameter has been passed into function.
     """
-    response = get_router.add_to_path('/1').get()
+    response = get_router.add_to_path(f"/{create_user.get('user_id')}").get()
     try:
         response.assert_parameter('first_name', 'data', '_ad')
         int('For case when row above did not trigger assertion')

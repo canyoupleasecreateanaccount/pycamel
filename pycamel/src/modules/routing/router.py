@@ -1,9 +1,13 @@
 from typing import Any
 
+import copy
+
 import requests
 
 from pycamel.src.modules.core.filter import Filter
 from pycamel.src.modules.response.response import CamelResponse
+
+from pycamel.src.errors.SystemErrors import ForbiddenParameter
 
 
 class Router:
@@ -11,20 +15,78 @@ class Router:
     Default router class that gives possibility to send requests as it
     implemented in base requests lib, but with some additionally functionality.
     """
-    def __init__(self, path: str, router_validation_key: str = None) -> None:
+    def __init__(
+            self,
+            path: str,
+            router_validation_key: str = None,
+            default_headers: dict = None
+    ) -> None:
         """
         :param path: Concreate router path. For example /users
         :param router_validation_key: Key that will be used for each request
+        :param default_headers: Dict. Default is None. Dict with headers
+            that will be used as default headers.
         and type of request under that route for .validate method.
         """
         self.path = path
         self.router_validation_key = router_validation_key
-        self.headers = {'Content-Type': 'application/json'}
+        self.headers = self._update_default_headers(default_headers)
 
         self.request_path = path
-        self.request_headers = self.headers
+        self.request_headers = copy.deepcopy(self.headers)
 
         self._execution_method = None
+
+    @staticmethod
+    def _update_default_headers(headers: dict = None):
+        """
+        Method updates default headers according to received dict of headers.
+
+        :param headers: Dict. Default is None. Dict with headers that will be
+               used as default headers.
+        :return: Dict with updated headers.
+        """
+        updated_headers = {'Content-Type': 'application/json'}
+        if headers:
+            for key in headers.keys():
+                updated_headers[key] = headers[key]
+        return updated_headers
+
+    def _clear(self) -> None:
+        """
+        Method updates router object to default after each fetched request.
+        :return: Nothing
+        """
+        self.request_path = self.path
+        self.request_headers = copy.deepcopy(self.headers)
+
+    def _fetch(self, *args, **kwargs) -> CamelResponse:
+        """
+        Method receives any default values from requests lib and push them into
+        execution method. After request execution it returns CamelResponse.
+        :param args: Any
+        :param kwargs: Any
+        :return: CamelResponse
+        """
+        if "headers" in kwargs.keys() or "url" in kwargs.keys():
+            raise ForbiddenParameter(
+                f"Parameters url and headers could be passed from API method, "
+                f"they could be set only by set methods."
+            )
+
+        response = self._execution_method(
+            url=self.request_path,
+            headers=self.request_headers,
+            *args,
+            **kwargs
+        )
+        _previous_headers = self.request_headers
+        self._clear()
+        return CamelResponse(
+            response=response,
+            headers=_previous_headers,
+            router_validation_key=self.router_validation_key
+        )
 
     def get(self, *args, **kwargs) -> CamelResponse:
         """
@@ -33,6 +95,7 @@ class Router:
         :param args: Dictionary, list of tuples or bytes to send
         in the query string for the :class:`Request`.
         :param kwargs: Optional arguments that ``request`` takes.
+               Except url and header
         :return: Result of execution _fetch method. CamelResponse class.
         """
         self._execution_method = requests.get
@@ -45,6 +108,7 @@ class Router:
         :param args: Dictionary, list of tuples or bytes to send
         in the query string for the :class:`Request`.
         :param kwargs: Optional arguments that ``request`` takes.
+               Except url and header
         :return: Result of execution _fetch method. CamelResponse class.
         """
         self._execution_method = requests.post
@@ -57,6 +121,7 @@ class Router:
         :param args: Dictionary, list of tuples or bytes to send
         in the query string for the :class:`Request`.
         :param kwargs: Optional arguments that ``request`` takes.
+               Except url and header
         :return: Result of execution _fetch method. CamelResponse class.
         """
         self._execution_method = requests.put
@@ -69,6 +134,7 @@ class Router:
         :param args: Dictionary, list of tuples or bytes to send
         in the query string for the :class:`Request`.
         :param kwargs: Optional arguments that ``request`` takes.
+               Except url and header
         :return: Result of execution _fetch method. CamelResponse class.
         """
         self._execution_method = requests.patch
@@ -81,6 +147,7 @@ class Router:
         :param args: Dictionary, list of tuples or bytes to send
         in the query string for the :class:`Request`.
         :param kwargs: Optional arguments that ``request`` takes.
+               Except url and header
         :return: Result of execution _fetch method. CamelResponse class.
         """
         self._execution_method = requests.delete
@@ -131,33 +198,3 @@ class Router:
         """
         self.request_headers[header_key] = header_value
         return self
-
-    def _clear(self) -> None:
-        """
-        Method updates router object to default after each fetched request.
-        :return: Nothing
-        """
-        self.request_path = self.path
-        self.request_headers = self.headers
-
-    def _fetch(self, *args, **kwargs) -> CamelResponse:
-        """
-        Method receives any default values from requests lib and push them into
-        execution method. After request execution it returns CamelResponse.
-        :param args: Any
-        :param kwargs: Any
-        :return: CamelResponse
-        """
-        response = self._execution_method(
-            url=self.request_path,
-            headers=self.request_headers,
-            *args,
-            **kwargs
-        )
-        _previous_headers = self.request_headers
-        self._clear()
-        return CamelResponse(
-            response=response,
-            headers=_previous_headers,
-            router_validation_key=self.router_validation_key
-        )
