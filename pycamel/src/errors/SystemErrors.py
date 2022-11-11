@@ -4,3 +4,11 @@ class ForbiddenParameter(Exception):
     """
     def __init__(self, *args):
         super().__init__(*args)
+
+
+class RequestException(Exception):
+    """
+    Raise when request throw an exeption during execution.
+    """
+    def __init__(self, *args):
+        super().__init__(*args)

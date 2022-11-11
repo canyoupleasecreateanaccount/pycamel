@@ -7,7 +7,7 @@ import requests
 from pycamel.src.modules.core.filter import Filter
 from pycamel.src.modules.response.response import CamelResponse
 
-from pycamel.src.errors.SystemErrors import ForbiddenParameter
+from pycamel.src.errors.SystemErrors import ForbiddenParameter, RequestException
 
 
 class Router:
@@ -73,15 +73,20 @@ class Router:
                 "Parameters url and headers could be passed from API method, "
                 "they could be set only by set methods."
             )
-
-        response = self._execution_method(
-            url=self.request_path,
-            headers=self.request_headers,
-            *args,
-            **kwargs
-        )
-        _previous_headers = self.request_headers
-        self._clear()
+        try:
+            response = self._execution_method(
+                url=self.request_path,
+                headers=self.request_headers,
+                *args,
+                **kwargs
+            )
+        except Exception as e:
+            raise RequestException(
+                f"During request execution we faced with error, please take a "
+                f"look: \n {e}") from e
+        finally:
+            _previous_headers = copy.deepcopy(self.request_headers)
+            self._clear()
         return CamelResponse(
             response=response,
             headers=_previous_headers,

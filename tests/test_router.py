@@ -1,6 +1,8 @@
-from tests.conftest import PATH, User
+from tests.conftest import BASE, User
 
-from pycamel.src.errors.SystemErrors import ForbiddenParameter
+from pycamel.src.errors.SystemErrors import ForbiddenParameter, RequestException
+
+PATH = f'{BASE}/users'
 
 
 def test_path_setter(get_router):
@@ -9,6 +11,7 @@ def test_path_setter(get_router):
     """
     get_router.add_to_path('/1')
     assert get_router.request_path == f"{PATH}/1"
+    get_router._clear()
 
 
 def test_header_setter(get_router):
@@ -18,6 +21,7 @@ def test_header_setter(get_router):
     header = {"TEST_HEADER": "APP"}
     get_router.set_headers(header)
     assert get_router.request_headers == header
+    get_router._clear()
 
 
 def test_that_setter_override_default_headers(get_router_with_default_headers):
@@ -69,6 +73,7 @@ def test_filter_setter(get_router):
     req_filter = {"limit": 2}
     get_router.set_filters(req_filter)
     assert get_router.request_path == f"{PATH}?limit=2"
+    get_router._clear()
 
 
 def test_header_append(get_router):
@@ -79,6 +84,7 @@ def test_header_append(get_router):
     assert get_router.request_headers == {
         'Content-Type': 'application/json', 'TEST_HEADER': 'APP'
     }
+    get_router._clear()
 
 
 def test_default_get_request(get_router):
@@ -257,3 +263,15 @@ def test_that_user_can_not_pass_forbidden_params_for_delete(get_router):
         int("For case when row above did throw exception")
     except ForbiddenParameter:
         pass
+
+
+def test_case_with_throw_exception_during_request(get_issues_router):
+    try:
+        get_issues_router.add_to_path('/companies/1').get(timeout=1)
+        int("For case when row above did throw exception")
+    except RequestException:
+        pass
+    assert get_issues_router.request_path == 'https://send-request.me/api/issues'
+    assert get_issues_router.request_headers == {
+        'Content-Type': 'application/json'
+    }

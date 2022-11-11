@@ -10,6 +10,15 @@ from pycamel.src.modules.routing.router import Router
 from pycamel.src.modules.response.response import CamelResponse
 
 
+BASE = 'https://send-request.me/api'
+
+USERS_ROUTER = Router(f'{BASE}/users')
+USERS_ROUTER_WITH_DEFAULT_HEADER = Router(
+    f'{BASE}/users', default_headers={"nice": "header"}
+)
+ISSUE_ROUTER = Router(f'{BASE}/issues')
+
+
 class UserBase(BaseModel):
     first_name: Optional[str]
     last_name: str
@@ -20,30 +29,30 @@ class User(UserBase):
     user_id: int
 
 
-PATH = 'https://send-request.me/api/users'
-
-
 @pytest.fixture
 def clear_project_validation_key():
     if 'pc_project_validation_key' in os.environ:
         del os.environ['pc_project_validation_key']
 
 
-@pytest.fixture
+@pytest.fixture(scope='session')
+def get_issues_router():
+    return ISSUE_ROUTER
+
+
+@pytest.fixture(scope='session')
 def get_router():
-    test_router = Router(PATH)
-    return test_router
+    return USERS_ROUTER
 
 
-@pytest.fixture
+@pytest.fixture(scope='session')
 def get_router_with_default_headers():
-    test_router = Router(PATH, default_headers={"nice": "header"})
-    return test_router
+    return USERS_ROUTER_WITH_DEFAULT_HEADER
 
 
 @pytest.fixture(scope='session')
 def make_request():
-    response = requests.get(PATH)
+    response = requests.get(f'{BASE}/users')
     return response
 
 
