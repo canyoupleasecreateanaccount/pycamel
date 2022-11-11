@@ -1,5 +1,12 @@
 Change log
 ----------
+v1.0.4
+------
+# Fixed issue with state clean when exception happens on send request stage
+  In case when you send request to backend and get exception, for example TimeOut Error,
+  state of route did not update, so as a result you can get wrong initial params for
+  request properties.
+
 v1.0.3
 ------
 # Fixed docstring for REST API methods and added Exception
