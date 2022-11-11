@@ -12,6 +12,10 @@ v1.0.3
   will test admin routes or routes with required AUTH headers for each request, so, you can just set it
   once for some route and enjoy.
 
+# Added JSON and DATA params into Response report.
+  From now, you can see additional useful information about your failed test because there
+  will be presented json or/and data that has been sent to backend.
+
 v1.0.2
 ------
 
