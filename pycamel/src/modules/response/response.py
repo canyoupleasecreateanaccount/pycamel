@@ -25,18 +25,26 @@ class CamelResponse:
         self,
         response: requests.Response,
         headers: dict,
-        router_validation_key: str = None
+        router_validation_key: str = None,
+        request_json: dict = None,
+        request_data: Any = None
     ) -> None:
         """
         :param response: Default response from requests lib.
         :param headers: requested headers needed for displaying in __str__
-        inst representation.
+            inst representation.
         :param router_validation_key: validation key that has been set for
-        router and will be used as default if another keys will not be sent.
+            router and will be used as default if another keys will not be sent.
+        :param request_json: Requested json that has been passed
+            to fetch method in request.
+        :param request_data: Requested data that has been passed
+            to fetch method in request.
         """
         self.router_validation_key = router_validation_key
         self.response = response
         self.headers = headers
+        self.request_json = request_json
+        self.request_data = request_data
         self.validated_objects = []
         try:
             self.response_data = response.json()
@@ -201,4 +209,8 @@ class CamelResponse:
                f"Response status code: {self.response.status_code}\n" \
                f"Response data: {self.response_data}\n" \
                f"Headers: {self.headers}\n" \
-               f"Request time took: {self.response.elapsed}"
+               f"Request time took: {self.response.elapsed}\n" \
+               f"Request data: {self.request_data}\n" \
+               f"Request json: {self.request_json}\n"
+
+

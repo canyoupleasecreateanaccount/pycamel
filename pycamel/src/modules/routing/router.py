@@ -68,10 +68,10 @@ class Router:
         :param kwargs: Any
         :return: CamelResponse
         """
-        if "headers" in kwargs.keys() or "url" in kwargs.keys():
+        if "headers" in kwargs or "url" in kwargs:
             raise ForbiddenParameter(
-                f"Parameters url and headers could be passed from API method, "
-                f"they could be set only by set methods."
+                "Parameters url and headers could be passed from API method, "
+                "they could be set only by set methods."
             )
 
         response = self._execution_method(
@@ -85,7 +85,9 @@ class Router:
         return CamelResponse(
             response=response,
             headers=_previous_headers,
-            router_validation_key=self.router_validation_key
+            router_validation_key=self.router_validation_key,
+            request_data=kwargs.get('data'),
+            request_json=kwargs.get('json')
         )
 
     def get(self, *args, **kwargs) -> CamelResponse:

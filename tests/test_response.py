@@ -206,3 +206,92 @@ def test_get_absent_param_in_data(get_response):
     """
     result = get_response.get_items_by_key('TV')
     assert result == []
+
+
+def test_request_body_and_json_for_get(get_router):
+    """
+    Checks that Response class contains none for data and json for get request.
+    """
+    response = get_router.get()
+    assert response.request_data is None
+    assert response.request_json is None
+
+
+def test_request_json_for_post(get_router):
+    """
+    Check that Response class contains request data or json.
+    """
+    request_json = {"some": "body"}
+    response = get_router.post(json=request_json)
+    assert response.request_data is None
+    assert response.request_json == request_json
+
+
+def test_request_data_for_post(get_router):
+    """
+    Check that Response class contains request data or json.
+    """
+    request_json = {"some": "body"}
+    response = get_router.post(data=request_json)
+    assert response.request_data == request_json
+    assert response.request_json is None
+
+
+def test_request_json_for_put(get_router):
+    """
+    Check that Response class contains request data or json.
+    """
+    request_json = {"some": "body"}
+    response = get_router.put(json=request_json)
+    assert response.request_data is None
+    assert response.request_json == request_json
+
+
+def test_request_data_for_put(get_router):
+    """
+    Check that Response class contains request data or json.
+    """
+    request_json = {"some": "body"}
+    response = get_router.put(data=request_json)
+    assert response.request_data == request_json
+    assert response.request_json is None
+
+
+def test_request_json_for_patch(get_router):
+    """
+    Check that Response class contains request data or json.
+    """
+    request_json = {"some": "body"}
+    response = get_router.patch(json=request_json)
+    assert response.request_data is None
+    assert response.request_json == request_json
+
+
+def test_request_data_for_patch(get_router):
+    """
+    Check that Response class contains request data or json.
+    """
+    request_json = {"some": "body"}
+    response = get_router.patch(data=request_json)
+    assert response.request_data == request_json
+    assert response.request_json is None
+
+
+def test_request_json_for_delete(get_router):
+    """
+    Check that Response class contains request data or json.
+    """
+    request_json = {"some": "body"}
+    response = get_router.delete(json=request_json)
+    assert response.request_data is None
+    assert response.request_json == request_json
+
+
+def test_request_data_for_delete(get_router):
+    """
+    Check that Response class contains request data or json.
+    """
+    request_json = {"some": "body"}
+    response = get_router.delete(data=request_json)
+    assert response.request_data == request_json
+    assert response.request_json is None
