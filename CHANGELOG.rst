@@ -8,7 +8,7 @@ v1.0.3
   only by specific methods like .append_headers, .set_headers, etc.
 
 # Added possibility to set default header for router
-  From now, you can set the default header for any router, it could be useful for case when you
+  From now, you can set the default header for any router, it could be useful for cases when you
   will test admin routes or routes with required AUTH headers for each request, so, you can just set it
   once for some route and enjoy.
 

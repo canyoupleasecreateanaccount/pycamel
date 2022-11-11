@@ -25,5 +25,5 @@ from .src.errors.ValidationErrors import (
 
 
 __author__ = 'Yurii Abramenko'
-__version__ = '1.0.2'
+__version__ = '1.0.3'
 __email__ = 'yura.abramenko1@gmail.com'
