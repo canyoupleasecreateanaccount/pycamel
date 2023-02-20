@@ -13,7 +13,7 @@ from pycamel.src.errors.ValidationErrors import (
 @pytest.mark.parametrize("status_codes", [
     ([200]),
     ([200, 201])
-])
+], ids=str)
 def test_status_code_assert(get_response, status_codes):
     """
     Validate that assertion of status code works fine for single value in
@@ -38,7 +38,7 @@ def test_wrong_status_code(get_response):
     '200',
     200,
     {"status": 200}
-])
+], ids=str)
 def test_incorrect_status_code_type(get_response, wrong_status_types):
     """
     In case we check raising ValueError exception, when expected status code
@@ -146,7 +146,7 @@ def test_incorrect_filter_applied(create_user, get_router):
     ("_le", 3),
     ("_ge", 2),
     ("_ge", 3)
-])
+], ids=str)
 def test_common_filter_params(get_response, filter_param, expected_value):
     """
     Testing filtering with common int values.
@@ -161,7 +161,7 @@ def test_common_filter_params(get_response, filter_param, expected_value):
         ("_gt", 10),
         ("_le", 2),
         ("_ge", 5),
-    ])
+    ], ids=str)
 def test_assertion_on_filters(get_response, expected_value, filter_param):
     """
     Test that we will raise exception when something went wrong.
@@ -177,7 +177,7 @@ def test_assertion_on_filters(get_response, expected_value, filter_param):
     ({"name": "Antony"}, "Antony", "_eq"),
     ({"name": "Antony"}, ["John", "Antony"], "_in"),
     ({"name": [10, 11]}, [10, 11], "_eq")
-])
+], ids=str)
 def test_filter_assertion_with_diff_types(
         get_response,
         data,

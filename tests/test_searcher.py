@@ -35,7 +35,7 @@ TEST_ITEM = {
     ("best_numbers", [1, 7, 0, 3]),  # array of numbers
     ("time", ["26.02.2022"]),  # string from top level
     ("datetime", [])  # case for absent key in object
-])
+], ids=str)
 def test_get_diff_types_of_data(search_key, expected_result):
     """Check that searcher could find on any levels any types of data"""
     result = prepare_items(TEST_ITEM, search_key)

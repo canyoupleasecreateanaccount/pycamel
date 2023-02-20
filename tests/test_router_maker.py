@@ -16,7 +16,7 @@ from pycamel.src.modules.routing.router import Router
         {"some": "header", "second_some": 1},
         {'Content-Type': 'application/json', "some": "header", "second_some": 1}
     ),
-])
+], ids=str)
 def test_router_generation(
         clear_project_validation_key, default_header, expected_value
 ):

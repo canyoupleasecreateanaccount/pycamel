@@ -21,7 +21,7 @@ def test_empty_key_if_nothing_was_found(clear_project_validation_key):
     ('middle_name', '', None),
     (None, None, 'data'),
     ('', None, None)
-])
+], ids=str)
 def test_key_priority(
         clear_project_validation_key,
         router_key,

@@ -1,10 +1,23 @@
 Change log
 ----------
+v1.0.5
+------
+
+# Added idx for parametrize.
+    It does not change anything in project but it helps us to maintenance the project much easiest.
+
+# Performance optimization
+    Changed logic in some methods that search values or works with text.
+
+# Increased autotests coverage
+    Added absent autotests. For now some methods and classes has better code coverage.
+
+
 v1.0.4
 ------
 # Fixed issue with state clean when exception happens on send request stage
-  In case when you send request to backend and get exception, for example TimeOut Error,
-  state of route did not update, so as a result you can get wrong initial params for
+  In case when you send a request to the backend and get an exception, for example, TimeOut Error,
+  state of the route did not update, so as a result, you can get the wrong initial params for
   request properties.
 
 v1.0.3

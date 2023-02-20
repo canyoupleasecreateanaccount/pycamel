@@ -12,12 +12,8 @@ class Filter:
         :return: String row with concatenation of all array items.
         """
         if len(filter_in_items) == 1:
-            return str(*filter_in_items)
-        filter_result = ""
-        for item in filter_in_items[:-1]:
-            filter_result += f"{item},"
-        filter_result += str(filter_in_items[-1])
-        return filter_result
+            return str(filter_in_items[0])
+        return ','.join(str(item) for item in filter_in_items)
 
     @classmethod
     def build_filter(cls, filters: dict) -> str:
@@ -29,12 +25,9 @@ class Filter:
         :param filters: Dict with filter items.
         :return: Prepared filter string like that "?age=22&gender=male".
         """
-        final_filter_row = ""
-        for item in filters.keys():
-            if isinstance(filters[item], list):
-                filter_item = Filter._prepare_array(filters[item])
-            else:
-                filter_item = filters[item]
-            final_filter_row += f"&{item}={filter_item}"
-        final_filter_row = final_filter_row[:0] + "?" + final_filter_row[1:]
-        return final_filter_row
+        filter_items = []
+        for item, value in filters.items():
+            filter_item = cls._prepare_array(value) \
+                if isinstance(value, list) else str(value)
+            filter_items.append(f"{item}={filter_item}")
+        return '?' + '&'.join(filter_items) if filter_items else ''

@@ -16,6 +16,11 @@ class RandomNumbers(CamelEnum):
     FIVE = 5
 
 
+class EmptyEnum(CamelEnum):
+    """Testing empty enum"""
+    pass
+
+
 class RandomArrays(CamelEnum):
     """Testing enum with arrays"""
     NUMBERS = [1, 2, 3, 4]
@@ -25,8 +30,9 @@ class RandomArrays(CamelEnum):
 @pytest.mark.parametrize("enum_class, expected_array", [
     (Statuses, ['ACTIVE', 'BANNED']),
     (RandomNumbers, [1, 2, 5]),
-    (RandomArrays, [[1, 2, 3, 4], ['ACTIVE', 'BANNED']])
-])
+    (RandomArrays, [[1, 2, 3, 4], ['ACTIVE', 'BANNED']]),
+    (EmptyEnum, []),
+], ids=str)
 def test_getting_list_of_enums(enum_class, expected_array):
     """
     In the case we check that method returns valid arrays of enum values.

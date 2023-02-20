@@ -21,3 +21,21 @@ def test_absent_validation_key(clear_project_validation_key):
     config = CamelConfig("http://localhost/")
     assert os.getenv('pc_project_validation_key') is None
     assert os.environ['pc_host'] == config.host
+
+
+def test_set_env_properties_method():
+    """
+    Test that the _set_env_properties() method correctly sets all relevant
+    environment variables from the properties of the CamelConfig object that
+    have values.
+
+    This test creates a CamelConfig object with a host and
+    project_validation_key, calls the _set_env_properties() method, and checks
+    that the corresponding environment variables are set correctly
+    """
+    host = "https://example.com/"
+    project_validation_key = "data:items:"
+    config = CamelConfig(host, project_validation_key)
+    config._set_env_properties()
+    assert os.getenv("pc_host") == host
+    assert os.getenv("pc_project_validation_key") == project_validation_key

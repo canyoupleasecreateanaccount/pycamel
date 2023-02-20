@@ -17,7 +17,7 @@ def search_key_processor(
     in specific case.
     :return: Returns string or None if key did not find.
     """
-    env_key = os.getenv("pc_project_validation_key")
+    env_key = os.environ.get("pc_project_validation_key")
     if response_validation_key is not None:
         if response_validation_key == '':
             return None
