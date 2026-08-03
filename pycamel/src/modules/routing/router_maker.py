@@ -1,5 +1,7 @@
 import os
 
+from typing import Callable
+
 from pycamel.src.modules.routing.router import Router
 from pycamel.src.errors.SystemErrors import MissingConfigError
 
@@ -47,7 +49,8 @@ class RouterMaker:
             default_headers: dict = None,
             timeout: float = None,
             retries: int = None,
-            backoff_factor: float = None
+            backoff_factor: float = None,
+            auth_provider: Callable[[], dict] = None
     ) -> Router:
         """
         Returns Router object according to received path.
@@ -68,6 +71,10 @@ class RouterMaker:
             CamelConfig is used, falling back to 0 (no retries).
         :param backoff_factor: Default is None, meaning the value configured
             on CamelConfig is used, falling back to 0.5.
+        :param auth_provider: Default is None, meaning the auth_provider
+            configured on CamelConfig is used, if any. A zero-argument
+            callable that returns a dict of headers, called again before
+            every request sent from that router.
         :return: Router object
         """
         path = self._build_url(route)
@@ -77,5 +84,6 @@ class RouterMaker:
             default_headers=default_headers,
             timeout=timeout,
             retries=retries,
-            backoff_factor=backoff_factor
+            backoff_factor=backoff_factor,
+            auth_provider=auth_provider
         )

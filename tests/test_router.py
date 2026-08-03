@@ -1,9 +1,32 @@
+from datetime import timedelta
+from unittest.mock import Mock
+
+import pytest
+
 from tests.conftest import BASE, User
 
 from pycamel.src.errors.SystemErrors import ForbiddenParameter, RequestException
+from pycamel.src.modules.core.config import CamelConfig
 from pycamel.src.modules.routing.router import Router
 
 PATH = f'{BASE}/users'
+
+
+@pytest.fixture
+def reset_auth_provider():
+    yield
+    CamelConfig._auth_provider = None
+
+
+def _fake_get_factory(calls):
+    def fake_get(url, headers, **kwargs):
+        calls.append(dict(headers))
+        response = Mock()
+        response.json.return_value = {}
+        response.elapsed = timedelta(seconds=0)
+        response.status_code = 200
+        return response
+    return fake_get
 
 
 def test_router_has_no_timeout_or_retries_by_default():
@@ -30,6 +53,77 @@ def test_router_applies_explicit_timeout_and_retries():
     assert adapter.max_retries.total == 3
     assert adapter.max_retries.backoff_factor == 1.1
     assert adapter.max_retries.status_forcelist == [502, 503, 504]
+
+
+def test_auth_provider_is_called_fresh_for_every_request():
+    """
+    Check that a router-level auth_provider is invoked again before each
+    request (so it naturally supports token refresh) and that its headers
+    are merged with the router's default headers.
+    """
+    calls = []
+    token_box = {"n": 0}
+
+    def provider():
+        token_box["n"] += 1
+        return {"Authorization": f"Bearer token-{token_box['n']}"}
+
+    router = Router(PATH, auth_provider=provider)
+    router.session.get = _fake_get_factory(calls)
+    router.get()
+    router.get()
+    assert calls[0]["Authorization"] == "Bearer token-1"
+    assert calls[1]["Authorization"] == "Bearer token-2"
+    assert calls[0]["Content-Type"] == "application/json"
+
+
+def test_explicit_header_overrides_auth_provider():
+    """
+    Check that a header explicitly set via append_header/set_headers takes
+    priority over the same header returned by auth_provider.
+    """
+    calls = []
+    router = Router(
+        PATH, auth_provider=lambda: {"Authorization": "Bearer from-provider"}
+    )
+    router.session.get = _fake_get_factory(calls)
+    router.append_header("Authorization", "Bearer manual-override")
+    router.get()
+    assert calls[0]["Authorization"] == "Bearer manual-override"
+
+
+def test_camel_config_auth_provider_is_used_as_project_wide_default(
+        reset_auth_provider
+):
+    """
+    Check that an auth_provider configured on CamelConfig is picked up by
+    routers created afterward that don't set their own.
+    """
+    calls = []
+    CamelConfig(
+        "http://localhost/", auth_provider=lambda: {"X-Api-Key": "global-key"}
+    )
+    router = Router(PATH)
+    router.session.get = _fake_get_factory(calls)
+    router.get()
+    assert calls[0]["X-Api-Key"] == "global-key"
+
+
+def test_router_auth_provider_overrides_camel_config_default(
+        reset_auth_provider
+):
+    """
+    Check that a router-level auth_provider takes priority over the one
+    configured on CamelConfig.
+    """
+    calls = []
+    CamelConfig(
+        "http://localhost/", auth_provider=lambda: {"X-Api-Key": "global-key"}
+    )
+    router = Router(PATH, auth_provider=lambda: {"X-Api-Key": "router-key"})
+    router.session.get = _fake_get_factory(calls)
+    router.get()
+    assert calls[0]["X-Api-Key"] == "router-key"
 
 
 def test_path_setter(get_router):

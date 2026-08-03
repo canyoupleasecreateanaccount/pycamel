@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Callable
 
 import copy
 import os
@@ -6,6 +6,7 @@ import os
 import requests
 from urllib3.util.retry import Retry
 
+from pycamel.src.modules.core.config import CamelConfig
 from pycamel.src.modules.core.filter import Filter
 from pycamel.src.modules.response.response import CamelResponse
 
@@ -27,7 +28,8 @@ class Router:
             default_headers: dict = None,
             timeout: float = None,
             retries: int = None,
-            backoff_factor: float = None
+            backoff_factor: float = None,
+            auth_provider: Callable[[], dict] = None
     ) -> None:
         """
         :param path: Concreate router path. For example /users
@@ -46,6 +48,12 @@ class Router:
         :param backoff_factor: Backoff factor applied between retries.
             Default is None, meaning the value configured on CamelConfig is
             used, falling back to 0.5 when nothing has been configured.
+        :param auth_provider: A zero-argument callable that returns a dict of
+            headers, called again before every request sent from this
+            router, so it naturally supports token refresh. Default is None,
+            meaning the auth_provider configured on CamelConfig is used, if
+            any. Headers returned by it can still be overridden per request
+            with .append_header/.set_headers.
         """
         self.path = path
         self.router_validation_key = router_validation_key
@@ -60,6 +68,8 @@ class Router:
             else self._env_int('pc_retries', default=0)
         self.backoff_factor = backoff_factor if backoff_factor is not None \
             else self._env_float('pc_backoff_factor', default=0.5)
+        self.auth_provider = auth_provider if auth_provider is not None \
+            else CamelConfig.get_auth_provider()
 
         self.session = self._build_session(self.retries, self.backoff_factor)
 
@@ -148,10 +158,13 @@ class Router:
             )
         if self.timeout is not None:
             kwargs.setdefault('timeout', self.timeout)
+        request_headers = self.request_headers
+        if self.auth_provider is not None:
+            request_headers = {**self.auth_provider(), **self.request_headers}
         try:
             response = self._execution_method(
                 url=self.request_path,
-                headers=self.request_headers,
+                headers=request_headers,
                 **kwargs
             )
         except Exception as e:
@@ -159,7 +172,7 @@ class Router:
                 f"During request execution we faced with error, please take a "
                 f"look: \n {e}") from e
         finally:
-            _previous_headers = copy.deepcopy(self.request_headers)
+            _previous_headers = copy.deepcopy(request_headers)
             self._clear()
         return CamelResponse(
             response=response,

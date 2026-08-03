@@ -1,18 +1,24 @@
 import os
 
+from typing import Callable, Optional
+
 
 class CamelConfig:
     """
     Configuration class responses for project configuration.
     Parameters of the class decides how it will work.
     """
+    _auth_provider: Optional[Callable[[], dict]] = None
+
     def __init__(
             self,
             host: str,
             project_validation_key: str = None,
+            *,
             default_timeout: float = None,
             retries: int = None,
-            backoff_factor: float = None
+            backoff_factor: float = None,
+            auth_provider: Callable[[], dict] = None
     ) -> None:
         """
         :param host: Base url for all services and endpoints.
@@ -43,6 +49,15 @@ class CamelConfig:
         :param backoff_factor: It is not mandatory parameter. Default
             backoff factor applied between retries, unless a router
             overrides it.
+        :param auth_provider: It is not mandatory parameter. A zero-argument
+            callable that returns a dict of headers (for example
+            {"Authorization": "Bearer <token>"}). It is called again before
+            every single request sent by any router, so it naturally
+            supports token refresh - just make the callable fetch or renew
+            the token whenever it is needed. Headers it returns are applied
+            to every router unless a router sets its own auth_provider, and
+            can still be overridden per request with .append_header/
+            .set_headers.
         """
         self.host = host
         self.project_validation_key = project_validation_key
@@ -50,6 +65,8 @@ class CamelConfig:
         self.retries = retries
         self.backoff_factor = backoff_factor
         self._set_env_properties()
+        if auth_provider is not None:
+            CamelConfig._auth_provider = auth_provider
 
     def _set_env_properties(self) -> None:
         """
@@ -62,3 +79,11 @@ class CamelConfig:
             value = env_variables.get(variable)
             if value is not None:
                 os.environ[f"pc_{variable}"] = str(value)
+
+    @staticmethod
+    def get_auth_provider() -> Optional[Callable[[], dict]]:
+        """
+        Returns the project-wide auth_provider set on CamelConfig, if any.
+        :return: Callable or None.
+        """
+        return CamelConfig._auth_provider
