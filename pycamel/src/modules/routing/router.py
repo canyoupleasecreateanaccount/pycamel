@@ -159,9 +159,11 @@ class Router:
         if self.timeout is not None:
             kwargs.setdefault('timeout', self.timeout)
         request_headers = self.request_headers
-        if self.auth_provider is not None:
-            request_headers = {**self.auth_provider(), **self.request_headers}
         try:
+            if self.auth_provider is not None:
+                request_headers = {
+                    **self.auth_provider(), **self.request_headers
+                }
             response = self._execution_method(
                 url=self.request_path,
                 headers=request_headers,

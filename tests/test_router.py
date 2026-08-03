@@ -14,13 +14,29 @@ PATH = f'{BASE}/users'
 
 @pytest.fixture
 def reset_auth_provider():
+    """Reset CamelConfig's class-level auth_provider after a test runs."""
     yield
     CamelConfig._auth_provider = None
 
 
 def _fake_get_factory(calls):
+    """Build a fake session.get that records the headers it was called with."""
     def fake_get(url, headers, **kwargs):
+        """Stand in for session.get, no network involved."""
         calls.append(dict(headers))
+        response = Mock()
+        response.json.return_value = {}
+        response.elapsed = timedelta(seconds=0)
+        response.status_code = 200
+        return response
+    return fake_get
+
+
+def _fake_get_kwargs_factory(calls):
+    """Build a fake session.get that records the kwargs it was called with."""
+    def fake_get(url, headers, **kwargs):
+        """Stand in for session.get, no network involved."""
+        calls.append(kwargs)
         response = Mock()
         response.json.return_value = {}
         response.elapsed = timedelta(seconds=0)
@@ -55,6 +71,30 @@ def test_router_applies_explicit_timeout_and_retries():
     assert adapter.max_retries.status_forcelist == [502, 503, 504]
 
 
+def test_router_default_timeout_is_injected_into_request_kwargs():
+    """
+    Check that a configured default timeout is actually passed through to
+    the underlying request when the caller does not pass their own.
+    """
+    calls = []
+    router = Router(PATH, timeout=3.5)
+    router.session.get = _fake_get_kwargs_factory(calls)
+    router.get()
+    assert calls[0]["timeout"] == 3.5
+
+
+def test_explicit_request_timeout_overrides_router_default():
+    """
+    Check that a timeout passed explicitly to .get() is not overridden by
+    the router's default timeout.
+    """
+    calls = []
+    router = Router(PATH, timeout=3.5)
+    router.session.get = _fake_get_kwargs_factory(calls)
+    router.get(timeout=1)
+    assert calls[0]["timeout"] == 1
+
+
 def test_auth_provider_is_called_fresh_for_every_request():
     """
     Check that a router-level auth_provider is invoked again before each
@@ -65,6 +105,7 @@ def test_auth_provider_is_called_fresh_for_every_request():
     token_box = {"n": 0}
 
     def provider():
+        """Return a new bearer token header on every call."""
         token_box["n"] += 1
         return {"Authorization": f"Bearer token-{token_box['n']}"}
 
@@ -124,6 +165,20 @@ def test_router_auth_provider_overrides_camel_config_default(
     router.session.get = _fake_get_factory(calls)
     router.get()
     assert calls[0]["X-Api-Key"] == "router-key"
+
+
+def test_auth_provider_error_is_wrapped_as_request_exception():
+    """
+    Check that an exception raised by auth_provider (for example a failed
+    network call to fetch a token) is wrapped into RequestException instead
+    of leaking a raw, inconsistent exception type to the caller.
+    """
+    def failing_provider():
+        raise ConnectionError("token endpoint unreachable")
+
+    router = Router(PATH, auth_provider=failing_provider)
+    with pytest.raises(RequestException):
+        router.get()
 
 
 def test_path_setter(get_router):
@@ -401,6 +456,11 @@ def test_that_user_can_not_pass_forbidden_params_for_delete(get_router):
 
 
 def test_case_with_throw_exception_during_request(get_issues_router):
+    """
+    Test that a RequestException from a failed request still leaves the
+    router's path/headers state cleared, matching the state-clean behavior
+    documented for exceptions raised during request execution.
+    """
     try:
         get_issues_router.add_to_path('/companies/1').get(timeout=1)
         int("For case when row above did throw exception")

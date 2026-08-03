@@ -35,7 +35,7 @@ setup(
     include_package_data=True,
     package_data={"pycamel": ["py.typed"]},
     python_requires=">=3.10",
-    install_requires=['pydantic>=2,<3', 'requests>=2.32'],
+    install_requires=['pydantic>=2,<3', 'requests>=2.32', 'urllib3>=1.26'],
     keywords=['python', 'automation', 'testing', 'tests', 'backend automation',
               'pytests', 'pydantic'],
     project_urls={
