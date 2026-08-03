@@ -1,8 +1,35 @@
 from tests.conftest import BASE, User
 
 from pycamel.src.errors.SystemErrors import ForbiddenParameter, RequestException
+from pycamel.src.modules.routing.router import Router
 
 PATH = f'{BASE}/users'
+
+
+def test_router_has_no_timeout_or_retries_by_default():
+    """
+    Check that a router without explicit timeout/retries keeps the previous
+    behavior: no enforced timeout and no retry adapter mounted.
+    """
+    router = Router(PATH)
+    assert router.timeout is None
+    assert router.retries == 0
+    adapter = router.session.get_adapter(PATH)
+    assert adapter.max_retries.total in (0, False)
+
+
+def test_router_applies_explicit_timeout_and_retries():
+    """
+    Check that explicit timeout/retries/backoff_factor are stored on the
+    router and a retry-enabled adapter is mounted on its session.
+    """
+    router = Router(PATH, timeout=2.5, retries=3, backoff_factor=1.1)
+    assert router.timeout == 2.5
+    assert router.retries == 3
+    adapter = router.session.get_adapter(PATH)
+    assert adapter.max_retries.total == 3
+    assert adapter.max_retries.backoff_factor == 1.1
+    assert adapter.max_retries.status_forcelist == [502, 503, 504]
 
 
 def test_path_setter(get_router):
@@ -192,6 +219,20 @@ def test_that_user_can_not_pass_forbidden_params_for_get(get_router):
         pass
     try:
         get_router.get(url="https://google.com")
+        int("For case when row above did throw exception")
+    except ForbiddenParameter:
+        pass
+
+
+def test_that_user_can_not_pass_positional_arguments(get_router):
+    """
+    Check that a positional argument raises a clear ForbiddenParameter
+    instead of leaking a confusing TypeError from the underlying requests
+    call (regression test, positional args always collided with the
+    explicit url= keyword passed internally).
+    """
+    try:
+        get_router.get({"page": 1})
         int("For case when row above did throw exception")
     except ForbiddenParameter:
         pass

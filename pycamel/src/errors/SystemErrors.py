@@ -12,3 +12,12 @@ class RequestException(Exception):
     """
     def __init__(self, *args):
         super().__init__(*args)
+
+
+class MissingConfigError(Exception):
+    """
+    Raise when a route is built before CamelConfig has been initiated
+    with a host.
+    """
+    def __init__(self, *args):
+        super().__init__(*args)

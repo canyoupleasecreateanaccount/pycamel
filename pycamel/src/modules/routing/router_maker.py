@@ -1,6 +1,7 @@
 import os
 
 from pycamel.src.modules.routing.router import Router
+from pycamel.src.errors.SystemErrors import MissingConfigError
 
 
 class RouterMaker:
@@ -30,13 +31,23 @@ class RouterMaker:
         :return: String. Full path.
         """
         host = os.environ.get('pc_host')
+        if not host:
+            raise MissingConfigError(
+                "Host is not configured. Please initiate CamelConfig with "
+                "a host value before creating routers, for example: "
+                "CamelConfig(host='https://localhost/')."
+            )
         return f"{host}{self.service_host}{route}"
 
     def make_router(
             self,
             route: str,
+            *,
             router_validation_key: str = None,
-            default_headers: dict = None
+            default_headers: dict = None,
+            timeout: float = None,
+            retries: int = None,
+            backoff_factor: float = None
     ) -> Router:
         """
         Returns Router object according to received path.
@@ -50,11 +61,21 @@ class RouterMaker:
         :param route: String. Example /some-endpoint
         :param default_headers: Dict. Default is None. Dict with headers
             that will be used as default headers.
+        :param timeout: Default is None, meaning the value configured on
+            CamelConfig is used, if any. Timeout (in seconds) applied to
+            every request sent from that router.
+        :param retries: Default is None, meaning the value configured on
+            CamelConfig is used, falling back to 0 (no retries).
+        :param backoff_factor: Default is None, meaning the value configured
+            on CamelConfig is used, falling back to 0.5.
         :return: Router object
         """
         path = self._build_url(route)
         return Router(
             path=path,
             router_validation_key=router_validation_key,
-            default_headers=default_headers
+            default_headers=default_headers,
+            timeout=timeout,
+            retries=retries,
+            backoff_factor=backoff_factor
         )

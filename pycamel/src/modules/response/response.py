@@ -3,8 +3,7 @@ from json import JSONDecodeError
 
 import requests
 
-from pydantic import BaseModel
-from pydantic.error_wrappers import ValidationError
+from pydantic import BaseModel, ValidationError
 
 from pycamel.src.modules.core.validator import Validator
 from pycamel.src.utils.searcher import search_item, prepare_items
@@ -72,6 +71,17 @@ class CamelResponse:
         :return: dict
         """
         return self.response_data
+
+    def assert_response_time(self, max_seconds: float) -> 'CamelResponse':
+        """
+        Validation method for response time. Check that time elapsed between
+        sending the request and receiving the response is not greater than
+        max_seconds.
+        :param max_seconds: Maximum acceptable response time in seconds.
+        :return: returns self
+        """
+        assert self.response.elapsed.total_seconds() <= max_seconds, self
+        return self
 
     def validate(
         self,

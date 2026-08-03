@@ -11,6 +11,8 @@ class Filter:
         :param filter_in_items: List of items
         :return: String row with concatenation of all array items.
         """
+        if len(filter_in_items) == 0:
+            return ""
         if len(filter_in_items) == 1:
             return str(*filter_in_items)
         filter_result = ""

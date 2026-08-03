@@ -68,6 +68,18 @@ def test_validation_with_received_path():
         assert isinstance(item, Order)
 
 
+def test_validation_with_nested_key_without_path():
+    """
+    Test validation with a single validation key (no colon-delimited path)
+    that is nested more than one level deep. Regression test for a bug
+    where the recursive key search discarded results found below the
+    first nesting level.
+    """
+    result = Validator(Order, TEST_USER, "game").fetch()
+    for item in result:
+        assert isinstance(item, Order)
+
+
 def test_validation_if_data_is_wrong():
     """
     Test when data is invalid and schema could not be applied to it.

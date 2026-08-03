@@ -9,7 +9,9 @@ from pycamel.src.modules.core.filter import Filter
         ({"page-limit": 100, "page_offset": 20, "tag": ["teamTag"]},
          "?page-limit=100&page_offset=20&tag=teamTag"),
         ({"flat_id_in": [2, 34, 45, 6], "human_name_in": ['Alice', 'Ann']},
-         "?flat_id_in=2,34,45,6&human_name_in=Alice,Ann")
+         "?flat_id_in=2,34,45,6&human_name_in=Alice,Ann"),
+        ({"tag": []}, "?tag="),
+        ({}, "?")
     ])
 def test_filter_build(filter_value, expected_filter):
     """

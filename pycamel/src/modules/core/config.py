@@ -6,7 +6,14 @@ class CamelConfig:
     Configuration class responses for project configuration.
     Parameters of the class decides how it will work.
     """
-    def __init__(self, host: str, project_validation_key: str = None) -> None:
+    def __init__(
+            self,
+            host: str,
+            project_validation_key: str = None,
+            default_timeout: float = None,
+            retries: int = None,
+            backoff_factor: float = None
+    ) -> None:
         """
         :param host: Base url for all services and endpoints.
             If we have something like that:
@@ -26,9 +33,22 @@ class CamelConfig:
             For cases when you need to get data from lower level, you can
             set list of keys as string with :.
             Like that - "data:some:needed:"
+        :param default_timeout: It is not mandatory parameter. Default
+            timeout (in seconds) applied to every request sent from any
+            router, unless a router or a request overrides it.
+        :param retries: It is not mandatory parameter. Default number of
+            retries applied to every router for requests that fail with a
+            gateway/service-unavailable status code, unless a router
+            overrides it.
+        :param backoff_factor: It is not mandatory parameter. Default
+            backoff factor applied between retries, unless a router
+            overrides it.
         """
         self.host = host
         self.project_validation_key = project_validation_key
+        self.default_timeout = default_timeout
+        self.retries = retries
+        self.backoff_factor = backoff_factor
         self._set_env_properties()
 
     def _set_env_properties(self) -> None:
@@ -39,5 +59,6 @@ class CamelConfig:
         """
         env_variables = self.__dict__
         for variable in env_variables:
-            if env_variables.get(variable) is not None:
-                os.environ[f"pc_{variable}"] = env_variables.get(variable)
+            value = env_variables.get(variable)
+            if value is not None:
+                os.environ[f"pc_{variable}"] = str(value)

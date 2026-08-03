@@ -1,13 +1,17 @@
 from typing import Any
 
 import copy
+import os
 
 import requests
+from urllib3.util.retry import Retry
 
 from pycamel.src.modules.core.filter import Filter
 from pycamel.src.modules.response.response import CamelResponse
 
 from pycamel.src.errors.SystemErrors import ForbiddenParameter, RequestException
+
+RETRY_STATUS_FORCELIST = [502, 503, 504]
 
 
 class Router:
@@ -18,8 +22,12 @@ class Router:
     def __init__(
             self,
             path: str,
+            *,
             router_validation_key: str = None,
-            default_headers: dict = None
+            default_headers: dict = None,
+            timeout: float = None,
+            retries: int = None,
+            backoff_factor: float = None
     ) -> None:
         """
         :param path: Concreate router path. For example /users
@@ -27,6 +35,17 @@ class Router:
         :param default_headers: Dict. Default is None. Dict with headers
             that will be used as default headers.
         and type of request under that route for .validate method.
+        :param timeout: Default timeout (in seconds) applied to every request
+            sent from this router, unless a request explicitly passes its own
+            timeout=. Default is None, meaning no timeout is enforced, unless
+            one has been configured on CamelConfig.
+        :param retries: Number of retries for requests that fail with one of
+            RETRY_STATUS_FORCELIST status codes. Default is None, meaning the
+            value configured on CamelConfig is used, falling back to 0
+            (no retries) when nothing has been configured.
+        :param backoff_factor: Backoff factor applied between retries.
+            Default is None, meaning the value configured on CamelConfig is
+            used, falling back to 0.5 when nothing has been configured.
         """
         self.path = path
         self.router_validation_key = router_validation_key
@@ -35,7 +54,55 @@ class Router:
         self.request_path = path
         self.request_headers = copy.deepcopy(self.headers)
 
+        self.timeout = timeout if timeout is not None \
+            else self._env_float('pc_default_timeout')
+        self.retries = retries if retries is not None \
+            else self._env_int('pc_retries', default=0)
+        self.backoff_factor = backoff_factor if backoff_factor is not None \
+            else self._env_float('pc_backoff_factor', default=0.5)
+
+        self.session = self._build_session(self.retries, self.backoff_factor)
+
         self._execution_method = None
+
+    @staticmethod
+    def _env_float(key: str, default: float = None) -> float:
+        """
+        Reads env variable and converts it to float, returns default value
+        if variable is absent.
+        """
+        value = os.environ.get(key)
+        return float(value) if value is not None else default
+
+    @staticmethod
+    def _env_int(key: str, default: int = None) -> int:
+        """
+        Reads env variable and converts it to int, returns default value
+        if variable is absent.
+        """
+        value = os.environ.get(key)
+        return int(value) if value is not None else default
+
+    @staticmethod
+    def _build_session(retries: int, backoff_factor: float) -> requests.Session:
+        """
+        Builds a requests.Session for the router, reused across requests for
+        connection pooling. Mounts a retry-enabled adapter when retries > 0.
+        :param retries: Number of retries for RETRY_STATUS_FORCELIST codes.
+        :param backoff_factor: Backoff factor applied between retries.
+        :return: requests.Session instance.
+        """
+        session = requests.Session()
+        if retries:
+            retry = Retry(
+                total=retries,
+                backoff_factor=backoff_factor,
+                status_forcelist=RETRY_STATUS_FORCELIST
+            )
+            adapter = requests.adapters.HTTPAdapter(max_retries=retry)
+            session.mount("http://", adapter)
+            session.mount("https://", adapter)
+        return session
 
     @staticmethod
     def _update_default_headers(headers: dict = None):
@@ -64,20 +131,27 @@ class Router:
         """
         Method receives any default values from requests lib and push them into
         execution method. After request execution it returns CamelResponse.
-        :param args: Any
+        :param args: Not supported, kept only to surface a clear error.
         :param kwargs: Any
         :return: CamelResponse
         """
+        if args:
+            raise ForbiddenParameter(
+                "Positional arguments are not supported by API methods, "
+                "please use keyword arguments instead, for example "
+                "params=, json=, data=, timeout=."
+            )
         if "headers" in kwargs or "url" in kwargs:
             raise ForbiddenParameter(
                 "Parameters url and headers could be passed from API method, "
                 "they could be set only by set methods."
             )
+        if self.timeout is not None:
+            kwargs.setdefault('timeout', self.timeout)
         try:
             response = self._execution_method(
                 url=self.request_path,
                 headers=self.request_headers,
-                *args,
                 **kwargs
             )
         except Exception as e:
@@ -99,65 +173,60 @@ class Router:
         """
         Request method based on :class:`Request` of requests lib.
         Gets request method as object and makes request.
-        :param args: Dictionary, list of tuples or bytes to send
-        in the query string for the :class:`Request`.
+        :param args: Not supported, raises ForbiddenParameter if passed.
         :param kwargs: Optional arguments that ``request`` takes.
                Except url and header
         :return: Result of execution _fetch method. CamelResponse class.
         """
-        self._execution_method = requests.get
+        self._execution_method = self.session.get
         return self._fetch(*args, **kwargs)
 
     def post(self, *args, **kwargs) -> CamelResponse:
         """
         Request method based on :class:`Request` of requests lib.
         Gets request method as object and makes request.
-        :param args: Dictionary, list of tuples or bytes to send
-        in the query string for the :class:`Request`.
+        :param args: Not supported, raises ForbiddenParameter if passed.
         :param kwargs: Optional arguments that ``request`` takes.
                Except url and header
         :return: Result of execution _fetch method. CamelResponse class.
         """
-        self._execution_method = requests.post
+        self._execution_method = self.session.post
         return self._fetch(*args, **kwargs)
 
     def put(self, *args, **kwargs) -> CamelResponse:
         """
         Request method based on :class:`Request` of requests lib.
         Gets request method as object and makes request.
-        :param args: Dictionary, list of tuples or bytes to send
-        in the query string for the :class:`Request`.
+        :param args: Not supported, raises ForbiddenParameter if passed.
         :param kwargs: Optional arguments that ``request`` takes.
                Except url and header
         :return: Result of execution _fetch method. CamelResponse class.
         """
-        self._execution_method = requests.put
+        self._execution_method = self.session.put
         return self._fetch(*args, **kwargs)
 
     def patch(self, *args, **kwargs) -> CamelResponse:
         """
         Request method based on :class:`Request` of requests lib.
         Gets request method as object and makes request.
-        :param args: Dictionary, list of tuples or bytes to send
-        in the query string for the :class:`Request`.
+        :param args: Not supported, raises ForbiddenParameter if passed.
         :param kwargs: Optional arguments that ``request`` takes.
                Except url and header
         :return: Result of execution _fetch method. CamelResponse class.
         """
-        self._execution_method = requests.patch
+        self._execution_method = self.session.patch
         return self._fetch(*args, **kwargs)
 
     def delete(self, *args, **kwargs) -> CamelResponse:
         """
         Request method based on :class:`Request` of requests lib.
         Gets request method as object and makes request.
-        :param args: Dictionary, list of tuples or bytes to send
-        in the query string for the :class:`Request`.
+        :param args: Not supported, raises ForbiddenParameter if passed.
         :param kwargs: Optional arguments that ``request`` takes.
                Except url and header
         :return: Result of execution _fetch method. CamelResponse class.
         """
-        self._execution_method = requests.delete
+        self._execution_method = self.session.delete
         return self._fetch(*args, **kwargs)
 
     def add_to_path(self, parameter: str) -> 'Router':

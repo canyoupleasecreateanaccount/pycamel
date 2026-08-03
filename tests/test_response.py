@@ -73,6 +73,26 @@ def test_getting_empty_response():
     assert c_response.get_response_json() == {}
 
 
+def test_assert_response_time_passes_for_generous_threshold(get_response):
+    """
+    Check that assert_response_time does not raise when max_seconds is
+    generous enough for the actual elapsed request time.
+    """
+    get_response.assert_response_time(60)
+
+
+def test_assert_response_time_fails_for_tiny_threshold(get_response):
+    """
+    Check that assert_response_time raises AssertionError when the response
+    took longer than the given max_seconds.
+    """
+    try:
+        get_response.assert_response_time(0)
+        int('For case when row above did not trigger assertion')
+    except AssertionError:
+        pass
+
+
 def test_validation_method(get_response):
     """
     Positive case of validation, when schema is valid and user is presented
