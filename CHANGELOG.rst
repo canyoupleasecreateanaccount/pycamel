@@ -1,5 +1,63 @@
 Change log
 ----------
+v2.0.0
+------
+Breaking changes:
+
+# Migrated to pydantic v2
+  ``pydantic<2`` is no longer supported, ``install_requires`` now pins
+  ``pydantic>=2,<3``. If your own validation schemas rely on the pydantic v1
+  behavior where ``Optional[X]`` without a default implicitly meant
+  ``= None``, you now need to set that default explicitly
+  (``Optional[X] = None``), otherwise the field becomes required.
+
+# Raised minimum supported Python version to 3.10
+  Python 3.9 reached end of life and current dependencies (pydantic,
+  requests and the dev toolchain) already require Python >= 3.10.
+
+Fixes:
+
+# Fixed validation key search silently failing for nested keys
+  ``.validate(schema, 'key')`` (a single key, no colon-delimited path) used
+  to always return nothing when the key was nested more than one level
+  deep, incorrectly raising ``AbsentValidationItems`` even though the data
+  was present. Nested keys are now found the same way ``assert_parameter``
+  and ``get_items_by_key`` already did.
+
+# Fixed a crash when filtering by an empty list
+  ``.set_filters({"tag": []})`` used to raise ``IndexError``. It now
+  produces an empty filter value instead.
+
+# Raised a clear error when a router is built before CamelConfig
+  Building a router without first calling ``CamelConfig(host=...)`` used to
+  silently produce a URL like ``None/users``. It now raises
+  ``MissingConfigError`` with a clear message.
+
+# Raised ForbiddenParameter instead of a confusing TypeError
+  Passing a positional argument to ``.get()``/``.post()``/etc. used to
+  crash with an unrelated ``TypeError`` from the underlying requests call.
+  It now raises the same ``ForbiddenParameter`` used for url/headers misuse.
+
+# Exported ForbiddenParameter and RequestException from the pycamel package
+  They can now be imported directly, for example
+  ``from pycamel import RequestException``.
+
+Added:
+
+# Session reuse, configurable retries and default timeout
+  Each router now reuses a ``requests.Session`` for connection pooling. You
+  can set ``default_timeout``, ``retries`` and ``backoff_factor`` on
+  ``CamelConfig`` as project-wide defaults, or override them per router via
+  ``RouterMaker.make_router(...)``/``Router(...)``. Retries apply to
+  502/503/504 responses only.
+
+# Added CamelResponse.assert_response_time(max_seconds)
+  Asserts that the response was received within max_seconds, based on the
+  existing ``response.elapsed``.
+
+# Added pycamel/py.typed marker
+  The package now ships a ``py.typed`` marker for type checkers.
+
 v1.0.4
 ------
 # Fixed issue with state clean when exception happens on send request stage

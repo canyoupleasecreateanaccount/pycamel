@@ -1,16 +1,30 @@
 pycamel
 =======
 
-|unittest passing| |codecov badge| |pypi version|
+|unittest passing| |codecov badge| |pypi version| |pypi downloads| |pypi pyversions|
 
 .. |unittest passing| image:: https://github.com/canyoupleasecreateanaccount/pycamel/actions/workflows/unittest.yml/badge.svg?branch=main
    :target: https://github.com/canyoupleasecreateanaccount/pycamel/actions/workflows/unittest.yml
 
 .. |codecov badge| image:: https://codecov.io/gh/canyoupleasecreateanaccount/pycamel/branch/main/graph/badge.svg?token=70GAEA6ZXL
- :target: https://codecov.io/gh/canyoupleasecreateanaccount/pycamel
+   :target: https://codecov.io/gh/canyoupleasecreateanaccount/pycamel
 
 .. |pypi version| image:: https://badge.fury.io/py/pycamel.svg
-    :target: https://badge.fury.io/py/pycamel
+   :target: https://badge.fury.io/py/pycamel
+
+.. |pypi downloads| image:: https://img.shields.io/pypi/dm/pycamel.svg
+   :target: https://pypi.org/project/pycamel/
+
+.. |pypi pyversions| image:: https://img.shields.io/pypi/pyversions/pycamel.svg
+   :target: https://pypi.org/project/pycamel/
+
+Requirements
+------------
+
+Python >= 3.10 and pydantic >= 2 (as of v2.0.0). If you already have
+pydantic schemas written for pydantic v1, note that
+``Optional[SomeType]`` no longer implies a default of ``None`` in
+pydantic v2 - you need to write ``Optional[SomeType] = None`` explicitly.
 
 Install
 -------
@@ -100,6 +114,43 @@ Create a file for our tests. ``tests/data_service/test_statistic.py``
         response = statistic_route.set_filters({"page": page}).get()
         response.assert_status_code([200])
 
+
+Timeouts and retries
+--------------------
+
+By default a router has no enforced timeout and does not retry failed
+requests, matching earlier versions. You can configure sane defaults for
+the whole project on ``CamelConfig``, and override them for a specific
+router when needed.
+
+.. code-block:: python
+
+    from pycamel import CamelConfig, RouterMaker
+
+    CamelConfig(
+        host='https://localhost/',
+        default_timeout=10,     # seconds, applied to every request
+        retries=3,               # retried only on 502/503/504 responses
+        backoff_factor=0.5
+    )
+
+    data_service_maker_v1 = RouterMaker('/data-service/v1')
+    # overrides the project-wide defaults for this router only
+    cats_statistic = data_service_maker_v1.make_router(
+        '/cats-statistic', timeout=5, retries=0
+    )
+
+A request can still override the default timeout by passing ``timeout=``
+explicitly, e.g. ``statistic_route.get(timeout=1)``. Requests made from the
+same router reuse a single ``requests.Session``, so connections are pooled.
+
+Response time assertion
+------------------------
+
+.. code-block:: python
+
+    response = statistic_route.get()
+    response.assert_response_time(2)  # fails if the response took over 2s
 
 Examples
 --------
