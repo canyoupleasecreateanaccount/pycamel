@@ -44,6 +44,14 @@ Fixes:
 
 Added:
 
+# Added auth_provider for dynamic, refreshable authentication headers
+  ``CamelConfig``/``RouterMaker.make_router``/``Router`` now accept an
+  ``auth_provider`` - a zero-argument callable returning a dict of headers.
+  It is called again before every single request, so it naturally supports
+  token refresh. Configure it once on ``CamelConfig`` as a project-wide
+  default, or per router/service. Headers it returns can still be
+  overridden per request with ``.append_header``/``.set_headers``.
+
 # Session reuse, configurable retries and default timeout
   Each router now reuses a ``requests.Session`` for connection pooling. You
   can set ``default_timeout``, ``retries`` and ``backoff_factor`` on
