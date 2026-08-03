@@ -20,9 +20,9 @@ ISSUE_ROUTER = Router(f'{BASE}/issues')
 
 
 class UserBase(BaseModel):
-    first_name: Optional[str]
+    first_name: Optional[str] = None
     last_name: str
-    company_id: Optional[int]
+    company_id: Optional[int] = None
 
 
 class User(UserBase):
