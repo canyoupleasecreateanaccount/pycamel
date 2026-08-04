@@ -1,7 +1,9 @@
 from typing import Any, Callable
 
+import contextlib
 import copy
 import os
+import threading
 
 import requests
 from urllib3.util.retry import Retry
@@ -54,6 +56,17 @@ class Router:
             meaning the auth_provider configured on CamelConfig is used, if
             any. Headers returned by it can still be overridden per request
             with .append_header/.set_headers.
+
+        A single Router instance builds one request at a time in its own
+        instance state (request_path/request_headers), from the first
+        builder call (.add_to_path/.set_headers/.set_filters/.append_header)
+        through the terminal .get/.post/.put/.patch/.delete call that sends
+        it and clears that state back to defaults. If the same Router is
+        shared across threads, that build-then-send sequence ("chain") is
+        automatically serialized per thread, so one thread's in-progress
+        request can never be corrupted by another thread's builder calls;
+        a second thread's chain simply blocks until the first one's request
+        has been sent.
         """
         self.path = path
         self.router_validation_key = router_validation_key
@@ -74,6 +87,8 @@ class Router:
         self.session = self._build_session(self.retries, self.backoff_factor)
 
         self._execution_method = None
+        self._chain_lock = threading.Lock()
+        self._chain_owner = None
 
     @staticmethod
     def _env_float(key: str, default: float = None) -> float:
@@ -129,13 +144,66 @@ class Router:
                 updated_headers[key] = headers[key]
         return updated_headers
 
+    def _begin_chain(self) -> bool:
+        """
+        Ensures the calling thread owns this router's request-building
+        chain (add_to_path/set_headers/set_filters/append_header through
+        the terminal get/post/put/patch/delete call), blocking until
+        another thread's in-flight chain has completed and been cleared.
+        :return: True when this call is the one that acquired the lock
+            (and is therefore responsible for releasing it on error via
+            _end_chain), False when the calling thread already owned it.
+        """
+        current_thread = threading.get_ident()
+        if self._chain_owner == current_thread:
+            return False
+        # Deliberately not a `with` block: this lock is acquired here and
+        # released later, potentially from a different call
+        # (_end_chain/_clear), once the whole builder-to-fetch chain
+        # completes - not at the end of this method.
+        self._chain_lock.acquire()  # pylint: disable=consider-using-with
+        self._chain_owner = current_thread
+        return True
+
+    def _end_chain(self) -> None:
+        """
+        Releases ownership of the router's request-building chain, if the
+        calling thread currently owns it, allowing another thread's chain
+        to proceed. Safe to call even when nothing is owned.
+        :return: None
+        """
+        if self._chain_owner == threading.get_ident():
+            self._chain_owner = None
+            self._chain_lock.release()
+
+    @contextlib.contextmanager
+    def _chain_guard(self):
+        """
+        Context manager for the builder methods: acquires chain ownership
+        if not already held by the calling thread, and releases it again
+        if the wrapped mutation raises, so a failed builder call never
+        leaves the chain permanently locked. On success, ownership is
+        intentionally kept until the terminal get/post/put/patch/delete
+        call (or a direct ._clear()) releases it.
+        """
+        acquired = self._begin_chain()
+        try:
+            yield
+        except Exception:
+            if acquired:
+                self._end_chain()
+            raise
+
     def _clear(self) -> None:
         """
-        Method updates router object to default after each fetched request.
+        Method updates router object to default after each fetched request,
+        and releases the request-building chain if the calling thread
+        holds it, so another thread's builder calls can proceed.
         :return: Nothing
         """
         self.request_path = self.path
         self.request_headers = copy.deepcopy(self.headers)
+        self._end_chain()
 
     def _fetch(self, *args, **kwargs) -> CamelResponse:
         """
@@ -145,44 +213,44 @@ class Router:
         :param kwargs: Any
         :return: CamelResponse
         """
-        if args:
-            raise ForbiddenParameter(
-                "Positional arguments are not supported by API methods, "
-                "please use keyword arguments instead, for example "
-                "params=, json=, data=, timeout=."
-            )
-        if "headers" in kwargs or "url" in kwargs:
-            raise ForbiddenParameter(
-                "Parameters url and headers could be passed from API method, "
-                "they could be set only by set methods."
-            )
-        if self.timeout is not None:
-            kwargs.setdefault('timeout', self.timeout)
-        request_headers = self.request_headers
         try:
-            if self.auth_provider is not None:
-                request_headers = {
-                    **self.auth_provider(), **self.request_headers
-                }
-            response = self._execution_method(
-                url=self.request_path,
-                headers=request_headers,
-                **kwargs
+            if args:
+                raise ForbiddenParameter(
+                    "Positional arguments are not supported by API methods, "
+                    "please use keyword arguments instead, for example "
+                    "params=, json=, data=, timeout=."
+                )
+            if "headers" in kwargs or "url" in kwargs:
+                raise ForbiddenParameter(
+                    "Parameters url and headers could be passed from API "
+                    "method, they could be set only by set methods."
+                )
+            if self.timeout is not None:
+                kwargs.setdefault('timeout', self.timeout)
+            request_headers = self.request_headers
+            try:
+                if self.auth_provider is not None:
+                    request_headers = {
+                        **self.auth_provider(), **self.request_headers
+                    }
+                response = self._execution_method(
+                    url=self.request_path,
+                    headers=request_headers,
+                    **kwargs
+                )
+            except Exception as ex:
+                raise RequestException(
+                    f"During request execution we faced with error, please "
+                    f"take a look: \n {ex}") from ex
+            return CamelResponse(
+                response=response,
+                headers=copy.deepcopy(request_headers),
+                router_validation_key=self.router_validation_key,
+                request_data=kwargs.get('data'),
+                request_json=kwargs.get('json')
             )
-        except Exception as e:
-            raise RequestException(
-                f"During request execution we faced with error, please take a "
-                f"look: \n {e}") from e
         finally:
-            _previous_headers = copy.deepcopy(request_headers)
             self._clear()
-        return CamelResponse(
-            response=response,
-            headers=_previous_headers,
-            router_validation_key=self.router_validation_key,
-            request_data=kwargs.get('data'),
-            request_json=kwargs.get('json')
-        )
 
     def get(self, *args, **kwargs) -> CamelResponse:
         """
@@ -193,6 +261,7 @@ class Router:
                Except url and header
         :return: Result of execution _fetch method. CamelResponse class.
         """
+        self._begin_chain()
         self._execution_method = self.session.get
         return self._fetch(*args, **kwargs)
 
@@ -205,6 +274,7 @@ class Router:
                Except url and header
         :return: Result of execution _fetch method. CamelResponse class.
         """
+        self._begin_chain()
         self._execution_method = self.session.post
         return self._fetch(*args, **kwargs)
 
@@ -217,6 +287,7 @@ class Router:
                Except url and header
         :return: Result of execution _fetch method. CamelResponse class.
         """
+        self._begin_chain()
         self._execution_method = self.session.put
         return self._fetch(*args, **kwargs)
 
@@ -229,6 +300,7 @@ class Router:
                Except url and header
         :return: Result of execution _fetch method. CamelResponse class.
         """
+        self._begin_chain()
         self._execution_method = self.session.patch
         return self._fetch(*args, **kwargs)
 
@@ -241,6 +313,7 @@ class Router:
                Except url and header
         :return: Result of execution _fetch method. CamelResponse class.
         """
+        self._begin_chain()
         self._execution_method = self.session.delete
         return self._fetch(*args, **kwargs)
 
@@ -252,7 +325,8 @@ class Router:
         :param parameter: Any string.
         :return: returns self
         """
-        self.request_path += parameter
+        with self._chain_guard():
+            self.request_path += parameter
         return self
 
     def set_headers(self, headers: dict) -> 'Router':
@@ -262,7 +336,8 @@ class Router:
         :param headers: dictionary with needed headers.
         :return: returns self
         """
-        self.request_headers = headers
+        with self._chain_guard():
+            self.request_headers = headers
         return self
 
     def set_filters(self, filters: dict) -> 'Router':
@@ -274,7 +349,8 @@ class Router:
         :param filters: dictionary with filters
         :return: returns self
         """
-        self.request_path += Filter.build_filter(filters)
+        with self._chain_guard():
+            self.request_path += Filter.build_filter(filters)
         return self
 
     def append_header(self, header_key: str, header_value: Any) -> 'Router':
@@ -287,5 +363,6 @@ class Router:
         :param header_value: any value
         :return: returns self
         """
-        self.request_headers[header_key] = header_value
+        with self._chain_guard():
+            self.request_headers[header_key] = header_value
         return self

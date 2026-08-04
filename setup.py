@@ -14,7 +14,7 @@ here = os.path.abspath(os.path.dirname(__file__))
 with codecs.open(os.path.join(here, "README.rst"), encoding="utf-8") as fh:
     long_description = "\n" + fh.read()
 
-VERSION = '2.0.0'
+VERSION = '2.1.0'
 DESCRIPTION = 'Backend automation framework. Automation is easy.'
 LONG_DESCRIPTION = 'A package helps Automation QA creates automation' \
                    'project and setup tests without additional infrastructure '\
@@ -31,7 +31,7 @@ setup(
     long_description=long_description,
     url='https://github.com/canyoupleasecreateanaccount/pycamel',
     license='Apache License, Version 2.0, see LICENSE file',
-    packages=find_packages(),
+    packages=find_packages(exclude=["tests", "tests.*"]),
     include_package_data=True,
     package_data={"pycamel": ["py.typed"]},
     python_requires=">=3.10",

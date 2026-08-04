@@ -15,7 +15,7 @@ from pydantic import BaseModel
 
 from pycamel.src.modules.response.response import CamelResponse
 from pycamel.src.errors.ValidationErrors import (
-    AbsentValidationItems, IncorrectAssertParameter
+    AbsentValidationItems, IncorrectAssertParameter, IncorrectValidationPath
 )
 
 
@@ -114,6 +114,17 @@ def test_validate_failure_raises_assertion_error():
     response = make_camel_response(json_data={"games": [{"game_name": "CSGO"}]})
     with pytest.raises(AssertionError):
         response.validate(Game, 'games')
+
+
+def test_validate_wrong_path_raises_incorrect_validation_path():
+    """
+    Check that a colon-delimited validation path whose intermediate segment
+    resolves to a list (which has no .get()) raises IncorrectValidationPath
+    instead of an unrelated AttributeError.
+    """
+    response = make_camel_response(json_data={"games": [{"game_name": "CSGO"}]})
+    with pytest.raises(IncorrectValidationPath):
+        response.validate(Game, 'games:rating')
 
 
 def test_validate_empty_data_raises_absent_validation_items():

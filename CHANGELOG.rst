@@ -1,5 +1,59 @@
 Change log
 ----------
+v2.1.0
+------
+Fixes:
+
+# Fixed CamelConfig silently leaking stale settings between instances
+  ``CamelConfig(...)`` stored its settings as env variables and only ever
+  added to them, so a parameter left out of a later ``CamelConfig(...)``
+  call (for example switching to a second service/host in the same
+  process) used to keep whatever an earlier call had configured -
+  ``retries``, ``backoff_factor``, ``default_timeout``,
+  ``project_validation_key`` and ``auth_provider`` included. Each
+  ``CamelConfig(...)`` call now fully replaces the previous configuration;
+  a parameter left as ``None`` clears the matching setting instead of
+  leaving it stale.
+
+# Fixed Filter.build_filter not percent-encoding keys/values
+  ``.set_filters({"q": "a&b=c d"})`` used to insert the value into the
+  query string as-is, so characters like ``&``, ``=``, ``#`` or spaces
+  could corrupt the URL or inject extra query parameters. Keys and values
+  are now percent-encoded; the comma used to join array values (for
+  example ``tag_in=[1, 2]`` -> ``tag_in=1,2``) is left unencoded.
+
+# Fixed Router not clearing its state when ForbiddenParameter was raised
+  Passing ``headers=``/``url=``/a positional argument to ``.get()``/
+  ``.post()``/etc. raised ``ForbiddenParameter`` before the router's
+  ``request_path``/``request_headers`` were reset, unlike every other
+  failure path. The router is now always cleared back to its defaults,
+  regardless of which error caused the request to fail.
+
+# Fixed Router not being safe to share across threads
+  A single ``Router`` instance builds one request at a time in its own
+  mutable state (``request_path``/``request_headers``), from the first
+  builder call (``.add_to_path``/``.set_headers``/``.set_filters``/
+  ``.append_header``) through the terminal ``.get``/``.post``/``.put``/
+  ``.patch``/``.delete`` call. If the same router was shared across
+  threads, one thread's builder calls could interleave with another's and
+  corrupt the in-flight request. That build-then-send sequence is now
+  automatically serialized per thread: a second thread's chain blocks
+  until the first one's request has actually been sent.
+
+# Fixed the built wheel/sdist shipping the test suite as an installable
+  top-level ``tests`` package
+  ``setup.py`` used ``find_packages()`` without excluding ``tests``, so
+  every install of pycamel also installed a top-level ``tests`` package
+  into site-packages - liable to collide with a project's own ``tests``
+  package.
+
+Added:
+
+# Added CamelConfig.reset()
+  Clears every setting previously configured via ``CamelConfig``,
+  including the project-wide ``auth_provider``. Mainly useful in test
+  suites/fixtures that need a clean slate between modules or services.
+
 v2.0.0
 ------
 Breaking changes:

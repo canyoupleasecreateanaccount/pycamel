@@ -1,6 +1,6 @@
 import json
 
-from typing import List, Any, Union
+from typing import List, Any, Optional, Union
 
 from pydantic import BaseModel, ValidationError
 
@@ -44,7 +44,7 @@ class Validator:
             self,
             searching_key: str,
             data_to_search: dict = None
-    ) -> [None, dict, list]:
+    ) -> Optional[Union[dict, list]]:
         """
         Method tries to detect part of object that should be validated
         according to received key, searching through any nesting level of

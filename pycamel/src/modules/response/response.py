@@ -222,5 +222,3 @@ class CamelResponse:
                f"Request time took: {self.response.elapsed}\n" \
                f"Request data: {self.request_data}\n" \
                f"Request json: {self.request_json}\n"
-
-

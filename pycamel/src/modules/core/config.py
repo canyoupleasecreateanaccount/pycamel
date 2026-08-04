@@ -9,6 +9,10 @@ class CamelConfig:
     Parameters of the class decides how it will work.
     """
     _auth_provider: Optional[Callable[[], dict]] = None
+    _ENV_FIELDS = (
+        'host', 'project_validation_key', 'default_timeout', 'retries',
+        'backoff_factor'
+    )
 
     def __init__(
             self,
@@ -58,6 +62,14 @@ class CamelConfig:
             to every router unless a router sets its own auth_provider, and
             can still be overridden per request with .append_header/
             .set_headers.
+
+        Each CamelConfig(...) call fully replaces the previously configured
+        values: a parameter left as None here clears the matching setting
+        (env variable, or the class-wide auth_provider) instead of leaving
+        behind whatever an earlier CamelConfig(...) call configured. This
+        keeps two consecutive configs (for example against two different
+        services/environments in the same process) from silently leaking
+        settings into each other.
         """
         self.host = host
         self.project_validation_key = project_validation_key
@@ -65,20 +77,22 @@ class CamelConfig:
         self.retries = retries
         self.backoff_factor = backoff_factor
         self._set_env_properties()
-        if auth_provider is not None:
-            CamelConfig._auth_provider = auth_provider
+        CamelConfig._auth_provider = auth_provider
 
     def _set_env_properties(self) -> None:
         """
-        Sets all project configuration variables as env variables.
-        All properties that don't have values, will not be set.
+        Sets all project configuration variables as env variables. A
+        property left as None clears the matching env variable rather than
+        leaving a stale value behind from a previous CamelConfig(...) call.
         :return: None
         """
-        env_variables = self.__dict__
-        for variable in env_variables:
-            value = env_variables.get(variable)
+        for variable in self._ENV_FIELDS:
+            env_key = f"pc_{variable}"
+            value = getattr(self, variable)
             if value is not None:
-                os.environ[f"pc_{variable}"] = str(value)
+                os.environ[env_key] = str(value)
+            else:
+                os.environ.pop(env_key, None)
 
     @staticmethod
     def get_auth_provider() -> Optional[Callable[[], dict]]:
@@ -87,3 +101,17 @@ class CamelConfig:
         :return: Callable or None.
         """
         return CamelConfig._auth_provider
+
+    @classmethod
+    def reset(cls) -> None:
+        """
+        Clears every setting previously configured via CamelConfig: every
+        pc_* env variable it manages and the class-wide auth_provider.
+        Mainly useful in test suites/fixtures that need a clean slate
+        between modules or services without relying on process exit to
+        drop stale configuration.
+        :return: None
+        """
+        for variable in cls._ENV_FIELDS:
+            os.environ.pop(f"pc_{variable}", None)
+        cls._auth_provider = None

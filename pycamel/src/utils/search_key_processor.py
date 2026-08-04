@@ -22,10 +22,10 @@ def search_key_processor(
         if response_validation_key == '':
             return None
         return response_validation_key
-    elif router_validation_key is not None:
+    if router_validation_key is not None:
         if router_validation_key != '':
             return router_validation_key
         return None
-    elif env_key:
+    if env_key:
         return os.getenv("pc_project_validation_key")
     return None

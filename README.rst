@@ -287,6 +287,19 @@ A request can still override the default timeout by passing ``timeout=``
 explicitly, e.g. ``statistic_route.get(timeout=1)``. Requests made from the
 same router reuse a single ``requests.Session``, so connections are pooled.
 
+Each ``CamelConfig(...)`` call fully replaces the previously configured
+values - a parameter left out clears the matching setting rather than
+keeping whatever an earlier ``CamelConfig(...)`` call had set. Call
+``CamelConfig.reset()`` to explicitly clear every setting (including
+``auth_provider``) without configuring a new one, which is mainly useful
+between test modules/services that each need a clean slate:
+
+.. code-block:: python
+
+    from pycamel import CamelConfig
+
+    CamelConfig.reset()
+
 Response time assertion
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -335,9 +348,6 @@ a common pytest framework and with pycamel. Enjoy it :)
 
 https://www.youtube.com/c/SolveMeChannel
 
-It is ready to use backend API where you can practice with automation case writing.
-
-``https://send-request.me/``
 
 Contact us
 ----------

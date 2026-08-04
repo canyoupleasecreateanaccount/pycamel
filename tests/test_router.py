@@ -1,9 +1,11 @@
+import threading
 from datetime import timedelta
 from unittest.mock import Mock
 
 import pytest
+import requests
 
-from tests.conftest import BASE, User
+from tests.conftest import BASE, User, fake_response
 
 from pycamel.src.errors.SystemErrors import ForbiddenParameter, RequestException
 from pycamel.src.modules.core.config import CamelConfig
@@ -263,18 +265,20 @@ def test_header_append(get_router):
     get_router._clear()
 
 
-def test_default_get_request(get_router):
+def test_default_get_request(get_router, stub_session):
     """
     Test default get request.
     """
+    stub_session(get_router, status_code=200)
     response = get_router.get()
     response.assert_status_code([200])
 
 
-def test_default_post_request(get_router):
+def test_default_post_request(get_router, stub_session):
     """
     Test default post request.
     """
+    stub_session(get_router, status_code=201)
     user_data = {
         "last_name": "morpheus"
     }
@@ -282,37 +286,37 @@ def test_default_post_request(get_router):
     response.assert_status_code([201])
 
 
-def test_default_put_request(get_router, create_user):
+def test_default_put_request(get_router, stub_session):
     """
     Test default put request.
     """
+    stub_session(get_router, status_code=200)
     user_data = {
         "last_name": "morpheus",
         "first_name": "Jony"
     }
-    response = get_router.add_to_path(
-        f"/{create_user.get('user_id')}").put(json=user_data)
+    response = get_router.add_to_path("/1").put(json=user_data)
     response.assert_status_code([200])
 
 
-def test_default_patch_request(get_router, create_user):
+def test_default_patch_request(get_router, stub_session):
     """
     Test default patch request.
     """
+    stub_session(get_router, status_code=200)
     user_data = {
         "name": "morpheus",
         "job": "zion resident"
     }
-    get_router.add_to_path(
-        f"/{create_user.get('user_id')}").patch(json=user_data)
+    get_router.add_to_path("/1").patch(json=user_data)
 
 
-def test_default_delete_request(get_router, create_user):
+def test_default_delete_request(get_router, stub_session):
     """
     Test default delete request.
     """
-    response = get_router.add_to_path(
-        f"/{create_user.get('user_id')}").delete()
+    stub_session(get_router, status_code=202)
+    response = get_router.add_to_path("/1").delete()
     response.assert_status_code([202])
 
 
@@ -326,31 +330,39 @@ def test_router_clear_method(get_router):
     assert get_router.request_path == PATH
 
 
-def test_getting_validated_objects(get_router, create_user):
+def test_getting_validated_objects(get_router, stub_session):
     """
     Test that after .validate method, user can get validated object as
     instances of BaseModel
     """
-    response = get_router.add_to_path(
-        f"/{create_user.get('user_id')}").get()
+    stub_session(
+        get_router, json_data={"user_id": 1, "last_name": "morpheus"}
+    )
+    response = get_router.add_to_path("/1").get()
     response.validate(User, '')
     validated_objects = response.get_validated_objects()
     assert isinstance(*validated_objects, User) is True
 
 
-def test_header_propagation_to_response_class_from_set_header(get_router):
+def test_header_propagation_to_response_class_from_set_header(
+        get_router, stub_session
+):
     """
     Test that added header could be in the response class.
     """
+    stub_session(get_router)
     header = {"APP": "TEST"}
     response = get_router.set_headers(header).get()
     assert response.headers == header
 
 
-def test_header_propagation_to_response_class_from_append_header(get_router):
+def test_header_propagation_to_response_class_from_append_header(
+        get_router, stub_session
+):
     """
     Test that added header could be in the response class.
     """
+    stub_session(get_router)
     expected_headers = {'Content-Type': 'application/json', 'APP': 'TEST'}
     response = get_router.append_header("APP", "TEST").get()
     assert response.headers == expected_headers
@@ -455,18 +467,165 @@ def test_that_user_can_not_pass_forbidden_params_for_delete(get_router):
         pass
 
 
-def test_case_with_throw_exception_during_request(get_issues_router):
+def test_case_with_throw_exception_during_request(
+        get_issues_router, stub_session
+):
     """
     Test that a RequestException from a failed request still leaves the
     router's path/headers state cleared, matching the state-clean behavior
     documented for exceptions raised during request execution.
     """
+    stub_session(
+        get_issues_router,
+        side_effect=requests.exceptions.Timeout("simulated timeout")
+    )
     try:
         get_issues_router.add_to_path('/companies/1').get(timeout=1)
         int("For case when row above did throw exception")
     except RequestException:
         pass
-    assert get_issues_router.request_path == 'https://send-request.me/api/issues'
+    assert get_issues_router.request_path == f'{BASE}/issues'
     assert get_issues_router.request_headers == {
         'Content-Type': 'application/json'
     }
+
+
+@pytest.mark.parametrize("verb", ["post", "put", "patch", "delete"])
+def test_request_json_is_captured_on_response(get_router, stub_session, verb):
+    """
+    Check that CamelResponse carries the json= payload that was sent,
+    leaving request_data empty (ported from the old network-backed
+    test_request_json_for_* tests in test_response.py).
+    """
+    stub_session(get_router)
+    request_json = {"some": "body"}
+    response = getattr(get_router, verb)(json=request_json)
+    assert response.request_data is None
+    assert response.request_json == request_json
+
+
+@pytest.mark.parametrize("verb", ["post", "put", "patch", "delete"])
+def test_request_data_is_captured_on_response(get_router, stub_session, verb):
+    """
+    Check that CamelResponse carries the data= payload that was sent,
+    leaving request_json empty (ported from the old network-backed
+    test_request_data_for_* tests in test_response.py).
+    """
+    stub_session(get_router)
+    request_data = {"some": "body"}
+    response = getattr(get_router, verb)(data=request_data)
+    assert response.request_data == request_data
+    assert response.request_json is None
+
+
+def test_request_body_and_json_are_none_for_get(get_router, stub_session):
+    """
+    Check that CamelResponse has no data/json for a plain GET request
+    (ported from test_request_body_and_json_for_get in test_response.py).
+    """
+    stub_session(get_router)
+    response = get_router.get()
+    assert response.request_data is None
+    assert response.request_json is None
+
+
+def test_forbidden_parameter_still_clears_router_state():
+    """
+    Regression test: ForbiddenParameter used to be raised before the
+    try/finally that clears request_path/request_headers, so a rejected
+    call left the router's mutated state (from an earlier add_to_path/
+    set_headers/etc.) dangling instead of resetting it like every other
+    failure path does.
+    """
+    router = Router(PATH)
+    router.add_to_path('/1').append_header('X-Test', 'value')
+    try:
+        router.get(headers={"some": "header"})
+        int("For case when row above did throw exception")
+    except ForbiddenParameter:
+        pass
+    assert router.request_path == PATH
+    assert router.request_headers == {'Content-Type': 'application/json'}
+
+
+def test_failed_builder_call_releases_chain_lock():
+    """
+    Regression test for _chain_guard's exception path: a builder call that
+    raises before the terminal get/post/etc. must release the chain lock
+    it just acquired, otherwise the router would deadlock forever on the
+    next request. set_filters(None) is not a dict, so Filter.build_filter
+    raises AttributeError before .set_filters returns.
+    """
+    calls = []
+    router = Router(PATH)
+    router.session.get = _fake_get_factory(calls)
+
+    with pytest.raises(AttributeError):
+        router.set_filters(None)
+
+    done = threading.Event()
+
+    def run():
+        router.get()
+        done.set()
+
+    thread = threading.Thread(target=run, daemon=True)
+    thread.start()
+    deadlock_message = "router.get() deadlocked after a failed builder call"
+    assert done.wait(timeout=2), deadlock_message
+    assert len(calls) == 1
+
+
+def test_concurrent_chains_are_serialized_per_router():
+    """
+    Regression test for thread-safety: two threads sharing one Router
+    instance must never interleave their add_to_path/.../get() chains.
+    Thread A's chain is held open (via a fake session.get that blocks
+    until released) while thread B attempts its own chain; B's builder
+    call must block until A's request has actually been sent and the
+    router state cleared, proving A's in-flight request can't be
+    corrupted by B's concurrent mutations.
+    """
+    router = Router(f'{BASE}/race')
+    seen_urls = []
+    a_in_flight = threading.Event()
+    release_a = threading.Event()
+
+    def blocking_get(url, headers, **kwargs):
+        seen_urls.append(url)
+        a_in_flight.set()
+        assert release_a.wait(timeout=2), "test setup: release_a never set"
+        return fake_response()
+
+    router.session.get = blocking_get
+
+    def run_a():
+        router.add_to_path('/a').get()
+
+    thread_a = threading.Thread(target=run_a)
+    thread_a.start()
+    a_never_started_message = "thread A never reached the network call"
+    assert a_in_flight.wait(timeout=2), a_never_started_message
+
+    b_finished = threading.Event()
+
+    def run_b():
+        router.add_to_path('/b').get()
+        b_finished.set()
+
+    thread_b = threading.Thread(target=run_b)
+    thread_b.start()
+
+    # Thread B's add_to_path must block behind A's still-open chain, so the
+    # router's path stays exactly what A set it to for as long as A is
+    # in flight.
+    assert not b_finished.wait(timeout=0.2)
+    assert router.request_path == f'{BASE}/race/a'
+
+    release_a.set()
+    thread_a.join(timeout=2)
+    thread_b.join(timeout=2)
+
+    assert b_finished.is_set()
+    assert seen_urls == [f'{BASE}/race/a', f'{BASE}/race/b']
+    assert router.request_path == f'{BASE}/race'

@@ -28,5 +28,5 @@ from .src.errors.SystemErrors import (
 
 
 __author__ = 'Yurii Abramenko'
-__version__ = '2.0.0'
+__version__ = '2.1.0'
 __email__ = 'yura.abramenko1@gmail.com'
