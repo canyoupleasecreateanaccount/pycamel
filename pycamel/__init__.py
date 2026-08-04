@@ -22,8 +22,11 @@ from .src.enums.assert_conditions import AssertConditions
 from .src.errors.ValidationErrors import (
     AbsentValidationItems, IncorrectValidationPath, IncorrectAssertParameter
 )
+from .src.errors.SystemErrors import (
+    ForbiddenParameter, RequestException, MissingConfigError
+)
 
 
 __author__ = 'Yurii Abramenko'
-__version__ = '1.0.4'
+__version__ = '2.1.0'
 __email__ = 'yura.abramenko1@gmail.com'

@@ -1,11 +1,13 @@
-from typing import List, Any, Union
+import json
 
-from pydantic import BaseModel
-from pydantic.error_wrappers import ValidationError
+from typing import List, Any, Optional, Union
+
+from pydantic import BaseModel, ValidationError
 
 from pycamel.src.errors.ValidationErrors import (
     AbsentValidationItems, IncorrectValidationPath
 )
+from pycamel.src.utils.searcher import search_item
 
 
 class Validator:
@@ -42,11 +44,11 @@ class Validator:
             self,
             searching_key: str,
             data_to_search: dict = None
-    ) -> [None, dict, list]:
+    ) -> Optional[Union[dict, list]]:
         """
-        Recursive method that try to detect part of object that should be
-        validated according to received key. In case when key is absent,
-        returns None.
+        Method tries to detect part of object that should be validated
+        according to received key, searching through any nesting level of
+        dicts and lists. In case when key is absent, returns None.
         :param searching_key: string that equal to searching key in dict
         :param data_to_search: dict with data
         :return: return data according to searching key. If key is absent,
@@ -54,12 +56,8 @@ class Validator:
         """
         if data_to_search is None:
             data_to_search = self.response_data
-        if isinstance(data_to_search, dict):
-            for key in data_to_search:
-                if key == searching_key:
-                    return data_to_search.get(key)
-                elif isinstance(data_to_search.get(key), dict):
-                    self._iterator(searching_key, data_to_search.get(key))
+        for item in search_item(data_to_search, searching_key):
+            return item
         return None
 
     def _data_searcher(self) -> Any:
@@ -99,9 +97,9 @@ class Validator:
         if data_to_validate not in ([], {}, None):
             if isinstance(data_to_validate, list):
                 for item in data_to_validate:
-                    result.append(self.schema.parse_obj(item))
+                    result.append(self.schema.model_validate(item))
             elif isinstance(data_to_validate, dict):
-                result.append(self.schema.parse_obj(data_to_validate))
+                result.append(self.schema.model_validate(data_to_validate))
         else:
             raise AbsentValidationItems(
                 'Nothing has been passed for validation.'
@@ -122,8 +120,9 @@ class Validator:
             initiated_objects = self._validate(data_to_validate)
             return initiated_objects
         except ValidationError as exception:
+            schema_json = json.dumps(self.schema.model_json_schema())
             raise AssertionError(
                 f"\n\nException: {exception}"
                 f"\nData passed to validator: {data_to_validate}"
-                f"\nValidation schema: {self.schema.schema_json()}"
+                f"\nValidation schema: {schema_json}"
             ) from exception

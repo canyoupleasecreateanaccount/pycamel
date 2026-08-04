@@ -19,11 +19,27 @@ jobs:
   deploy:
 
     runs-on: ubuntu-latest
+    # Required for PyPI Trusted Publishing (OIDC): this job exchanges a
+    # short-lived GitHub-issued token for a PyPI upload token, so no
+    # long-lived PYPI_API_TOKEN secret needs to be stored in the repo.
+    # One-time setup required on pypi.org before this works: on the
+    # pycamel project's "Publishing" settings, add a trusted publisher for
+    # this repo/workflow (owner, repo name, workflow filename
+    # "pycamel-publish.yml", environment left blank unless one is added
+    # below). Until that's configured, this step will fail.
+    #
+    # Job-level `permissions` fully replaces the workflow-level block above
+    # for this job rather than merging with it, so contents: read has to be
+    # repeated here too - otherwise actions/checkout below would lose read
+    # access to the repo.
+    permissions:
+      contents: read
+      id-token: write
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Set up Python
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v5
       with:
         python-version: '3.x'
     - name: Install dependencies
@@ -33,7 +49,7 @@ jobs:
     - name: Build package
       run: python -m build
     - name: Publish package
-      uses: pypa/gh-action-pypi-publish@27b31702a0e7fc50959f5ad993c78deac1bdfc29
-      with:
-        user: __token__
-        password: ${{ secrets.PYPI_API_TOKEN }}
+      # v1.14.2, the first pin new enough to support Trusted Publishing
+      # (added in v1.8.0); the previous pin was v1.4.2, which predates it
+      # and requires a password.
+      uses: pypa/gh-action-pypi-publish@a892a5a61159132606e93a2fa6f4358831b04d26

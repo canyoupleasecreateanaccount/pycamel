@@ -360,7 +360,10 @@ max-statements=100
 max-parents=7
 
 # Maximum number of attributes for a class (see R0902).
-max-attributes=10
+# Router sits at 13: the two extra attributes are the request-building
+# chain lock/owner used to make a shared Router instance safe across
+# threads.
+max-attributes=13
 
 # Minimum number of public methods for a class (see R0903).
 min-public-methods=0
