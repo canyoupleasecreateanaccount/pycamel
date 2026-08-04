@@ -49,7 +49,13 @@ jobs:
     - name: Build package
       run: python -m build
     - name: Publish package
-      # v1.14.2, the first pin new enough to support Trusted Publishing
-      # (added in v1.8.0); the previous pin was v1.4.2, which predates it
-      # and requires a password.
-      uses: pypa/gh-action-pypi-publish@a892a5a61159132606e93a2fa6f4358831b04d26
+      # This is a Docker-based action: the ref after @ doubles as the tag
+      # GitHub pulls from ghcr.io/pypa/gh-action-pypi-publish. PyPA only
+      # pushes images tagged by branch head commits and by named git tags
+      # (like v1.14.2) - not by the sha of the tag commit itself, which is
+      # a different, untagged commit - so pinning to that sha 404s with
+      # "manifest unknown". Pin to the named tag instead, confirmed
+      # pullable. v1.14.2 is also the first release new enough to support
+      # Trusted Publishing (added in v1.8.0); the previous pin was v1.4.2,
+      # which predates it and requires a password.
+      uses: pypa/gh-action-pypi-publish@v1.14.2
