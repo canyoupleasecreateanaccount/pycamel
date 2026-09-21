@@ -357,7 +357,7 @@ Email: ``solveme.solutions@gmail.com``
 Telegram: ``https://t.me/automation_testing_with_solveme``
 
 ☕ Support My Work
-^^^^^^^^^^^^^^^^^^
+------------------
 
 If you find my projects useful, feel free to support my further development:
 
@@ -369,5 +369,3 @@ If you find my projects useful, feel free to support my further development:
 * **ETH / BNB / MATIC:** ``0x3EC81929e06950322d5125d8e6CA834F3d9B21f8``
 * **SOL:** ``86VzJkNe69YZvnKXrUGwoMVJtPp5yk67eQJokBJph4XW``
 * **TRX:** ``TEak8XxSGDeeSY11Dj6BDpiPWadVm75E2C``
-
-----
