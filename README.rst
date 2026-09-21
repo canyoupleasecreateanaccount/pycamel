@@ -356,12 +356,14 @@ Email: ``solveme.solutions@gmail.com``
 
 Telegram: ``https://t.me/automation_testing_with_solveme``
 
-Donation
----------
-For people who would like to support us. God bless U ^_^
+### ☕ Support My Work
+If you find my projects useful, feel free to support my further development:
 
-``BSC20``
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-ffdd00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black)](https://www.buymeacoffee.com/yourCrowley)
 
-``0x3EC81929e06950322d5125d8e6CA834F3d9B21f8``
 
-DOGE | BNB | CAKE | ADA | BUSD | TRX | MATIC | AVAX | ATOM | DIA | DOT
+- **BTC:** `bc1qdmesklh36r03vgw7m6zcxjhakvsxe4q45nk0p4`
+- **ETH / BNB / MATIC:** `0x3EC81929e06950322d5125d8e6CA834F3d9B21f8`
+- **SOL:** `86VzJkNe69YZvnKXrUGwoMVJtPp5yk67eQJokBJph4XW`
+- **TRX:** `TEak8XxSGDeeSY11Dj6BDpiPWadVm75E2C`
+---
